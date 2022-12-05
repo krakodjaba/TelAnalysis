@@ -2,18 +2,15 @@
 TelAnalysis - Telegram Analysis tool
 _______
 Установка / Installing.
-_______
 pip install -r requirements
 python main.py
 
 _______
 Menu
-_______
 1 - Make graph and tables for Gephi. Import nodes.csv and edges.csv to Gephi.
 2 - Quantitative text analysis [Users & all chat]
 _______
 Q/A
-_______
 where can I get the file for analysis? Go to the telegram chat and archive it in json, then specify the json file in the tool.
 где взять файл для анализа? Зайдите в чат телеграма и архивируйте его в json, далее файл json указывайте в инструменте
 _______

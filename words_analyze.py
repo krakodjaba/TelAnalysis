@@ -15,7 +15,7 @@ with open(filename, 'r', encoding='utf-8') as datas:
         spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:'
         try:
             user = jmespath.search('from', message)
-            print(user)
+            #print(user)
             user = remove_chars_from_text(user, spec_chars)
             user = remove_chars_from_text(user, string.digits)
             if user is not None:
@@ -84,13 +84,13 @@ with open(filename, 'r', encoding='utf-8') as datas:
                     try:
                         print('  ',i[0], "-", i[1])
                     except Exception as ex:
-                        print(ex)
+                        #print(ex)
                         pass
                 print("__")
             else:
                 continue
         except Exception as ex:
-            print(ex)
+            #print(ex)
             continue
     all_tokens = nltk_analyse.analyse_all(all_tokens)
     print("\nАнализ Всего чата:")
@@ -98,6 +98,6 @@ with open(filename, 'r', encoding='utf-8') as datas:
         try:
             print('  ',i[0], "-", i[1])
         except Exception as ex:
-            print(ex)
+            #print(ex)
             pass
     print("__")

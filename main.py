@@ -238,5 +238,7 @@ def default():
 
 if __name__ == "__main__":
     import os
+    if not os.path.exists('asset'):
+        os.makedirs('asset')
     os.system('open http://127.0.0.1:9993')
     start_server(default, host='127.0.0.1', port=9993, debug=True, background='gray')

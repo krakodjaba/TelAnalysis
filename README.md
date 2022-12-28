@@ -1,10 +1,8 @@
 # TelAnalysis
 TelAnalysis - Telegram Analysis tool
-_______
 Установка / Installing.
 pip install -r requirements
 python main.py
-
 _______
 Menu
 1 - Make graph and tables for Gephi. Import nodes.csv and edges.csv to Gephi.

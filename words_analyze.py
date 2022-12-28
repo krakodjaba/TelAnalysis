@@ -1,103 +1,139 @@
-import json
-import jmespath
-from utils import remove_chars_from_text
+from utils import remove_chars_from_text, remove_emojis, clear_user
 import nltk_analyse
-import string
+import sys
+from pywebio import input, config
+from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file
+from pywebio.input import file_upload as file
+from pywebio.session import run_js
+import json, re, jmespath, string, collections
+import networkx as nx
+import matplotlib.pyplot as plt
 
+config(theme='dark',title="TelAnalysis", description="Analysing Telegram CHATS-CHANNELS-GROUPS")
+put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
+put_html("<h1><center>Analyse of Telegram Chat<center></h1><br>")
+put_button("Close",onclick=lambda: run_js('window.close()'), color='danger')
 all_tokens = []
 users = []
 count_messages = 0
-filename = input('filename: ')
-with open(filename, 'r', encoding='utf-8') as datas:
+filename = sys.argv[1]
+filename = filename.split(".")[0]
+filename = filename.split("/")[1]
+with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
     data = json.load(datas)
     sf = jmespath.search('messages[*]',data)
     for message in sf:
-        spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:'
         try:
             user = jmespath.search('from', message)
-            #print(user)
-            user = remove_chars_from_text(user, spec_chars)
-            user = remove_chars_from_text(user, string.digits)
-            if user is not None:
-                user = str(user).replace(" ","").replace('"','').replace(".","").replace("꧁","")
+            if user:
+                user = clear_user(user)
             if user not in users and user is not None:
                 #user = str(user).replace(" ","").replace('"','').replace(".","").replace("꧁","")
                 users.append(user)
-                print(user)
+                #put_code(user)
                 try:
                     exec('{}_list = []'.format(user))
                 except Exception as ex:
-                    print(ex)
-                    pass
+                    put_code(ex, user)
+                    continue
         except:
             continue
-    #print(users)
     for message in sf:
         texts = jmespath.search('text',message)
         from_user = jmespath.search('from', message)
         if from_user is None:
             continue
         else:
-            from_user = from_user.replace(" ","").replace('"','').replace(".","").replace("꧁","")
+            from_user = clear_user(from_user)
         if str(type(texts)) == "<class 'str'>":
             if texts != '':
-                test = texts.replace("\\n","").replace("\n","").replace('"',"'",).strip()
+                test = str(texts).replace("\\n","").replace("\n","").replace('"',"'",).strip()
                 try:
-                    exec('{}_list.append("{}")'.format(from_user,test))
+                    exec('{}_list.append("{}")'.format(from_user, test))
                 except Exception as ex:
-                    print(ex)
+                    put_code(ex, type(from_user),type(test), "2!")
                     continue
-                #print(texts.replace("\\n","").replace("\n","").strip())
                 count_messages +=1
         elif str(type(texts)) == "<class 'list'>":
-            for text in texts:
+            for textt in texts:
                 try:
-                    if len(text['text']) >1:
-                        test = text['text'].replace("\\n","").replace("\n","").strip()
+                    if len(textt['text']) >1:
+                        test = textt['text']
+                        #put_code(textt)
+                        if "http" in test:
+                            continue
+                        else:
+                            try:
+                                test = test.replace("\\n","").replace("\n","").strip()
+                            except:
+                                put_code("pizda rulu")
+                            try:
+                                if test is None or test == "":
+                                    continue
+                                else:
+                                    exec('{}_list.append("{}")'.format(from_user,str(test)))
+                            except Exception as ex:
+                                continue
+                            count_messages +=1
+                except Exception as ex:
+                    try:
                         try:
-                            exec('{}_list.append("{}")'.format(from_user,test))
+                            test = textt.replace("\\n","").replace("\n","").strip()
+                        except:
+                            put_code("pizda rulu")
+                        try:
+                            if test is None or test == "":
+                                continue
+                            else:
+                                exec('{}_list.append("{}")'.format(from_user,str(test)))
                         except Exception as ex:
                             continue
-                        #print(text['text'].replace("\\n","").replace("\n","").strip())
                         count_messages +=1
-                except Exception as ex:
-                    print(ex)
-                    pass
-    print('All used messages count:', count_messages)
-    print('Messages from count users detected:', len(users))
+                    except:
+                        put_code("vashe pizdqa")
+    put_code('All used messages count:', count_messages)
+    put_code('Messages from count users detected:', len(users))
     for i,user in enumerate(users):
         try:
+            #exec('#print({}_list)'.format(user))
             exec('da = {}_list'.format(user))
+            #print(da)
+
             genuy, tokens = nltk_analyse.analyse(da)
             for token in tokens:
                 all_tokens.append(token)
             if len(da) >1:
-                print("*"*90)
-                print(f'--{i} {user}: ')
+                put_code("*"*90)
+                put_code(f'--{i} {user}: ')
                 for j,ga in enumerate(da):
-                    print(f'[{j}] {ga}')
+                    put_code(f'[{j}] {ga}')
             else:
+                put_code("continue")
                 continue
             if len(genuy) >1:
-                print(f"\nАнализ сообщений {user}:")
+                put_code(f"\nАнализ сообщений {user}:")
                 for i in genuy:
                     try:
-                        print('  ',i[0], "-", i[1])
+                        m = f'  {i[0]} - {i[1]}'
+                        put_code(m)
                     except Exception as ex:
-                        #print(ex)
+                        put_code(ex)
                         pass
-                print("__")
+                put_code("__")
             else:
                 continue
         except Exception as ex:
-            #print(ex)
+            put_code(ex)
             continue
     all_tokens = nltk_analyse.analyse_all(all_tokens)
-    print("\nАнализ Всего чата:")
+    put_code("\nАнализ Всего чата:")
     for i in all_tokens:
         try:
-            print('  ',i[0], "-", i[1])
+            m = m = f'  {i[0]} - {i[1]}'
+            put_code(m)
         except Exception as ex:
-            #print(ex)
+            put_code(ex)
             pass
-    print("__")
+    put_code("__")
+    put_button("Close",onclick=lambda: run_js('window.close()'), color='danger')
+    put_button("Scroll Up",onclick=lambda: run_js('window.scrollTo(document.body.scrollHeight, 0)'))

@@ -41,6 +41,21 @@ def generator(filename):
                 name_id = f'{fromm}, {from_id}'
                 names.append(name_id)  
                 message = jmespath.search('text',i)
+                if str(type(message)) == "<class 'list'>":
+                    print(message)
+                    for textt in message:
+                        print(textt)
+                        try:
+                            test = textt[:-1]
+                            test = test.replace("\\n","").replace("\n","").strip()
+                            try:
+                                message = remove_emojis(test)
+                            except:
+                                message = test
+                        except:
+                            continue
+                if message == "":
+                    continue
                 reply_to_message_id = jmespath.search('reply_to_message_id',i)
                 if reply_to_message_id is not None:
                     for i in sf:
@@ -161,7 +176,7 @@ def generator(filename):
                     else:
                         continue
     except Exception as ex:
-        #print(ex)
+        
         pass
 
     put_text("First message date:")
@@ -237,8 +252,11 @@ def default():
     
 
 if __name__ == "__main__":
-    import os
-    if not os.path.exists('asset'):
-        os.makedirs('asset')
-    os.system('open http://127.0.0.1:9993')
-    start_server(default, host='127.0.0.1', port=9993, debug=True, background='gray')
+    try:
+        import os
+        if not os.path.exists('asset'):
+            os.makedirs('asset')
+        os.system('open http://127.0.0.1:9993')
+        start_server(default, host='127.0.0.1', port=9993, debug=True, background='gray')
+    except KeyboardInterrupt:
+        exit()

@@ -46,7 +46,11 @@ def analyse_all(data):
     text = remove_chars_from_text(text, spec_chars)
     text = remove_chars_from_text(text, string.digits)
     text = remove_emojis(text)
-    text_tokens = word_tokenize(text)
+    #print(text)
+    if len(text) >= 1:
+        text_tokens = word_tokenize(text)
+    else:
+        text_tokens = ''
     #print(text_tokens)
     text_tokens = [token.strip() for token in text_tokens if token not in russian_stopwords and len(token) >= 2 and len(token) < 26 and token not in english_stopwords and 'http' not in token and token not in stopwords_list.stopword_txt]
     text = nltk.Text(text_tokens)

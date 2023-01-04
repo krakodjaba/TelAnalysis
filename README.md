@@ -1,6 +1,8 @@
-![image](https://user-images.githubusercontent.com/107117398/209858730-fe6ff0a3-9fcd-4d13-be6a-3f2a6bdd198b.png)
 # TelAnalysis
-TelAnalysis - Telegram Analysis tool
+![image](https://user-images.githubusercontent.com/107117398/209858730-fe6ff0a3-9fcd-4d13-be6a-3f2a6bdd198b.png)
+# 
+![Video Preview](https://user-images.githubusercontent.com/107117398/210658121-01c8eac5-ef5b-4b1d-a178-90e31d2b7071.mp4)
+# TelAnalysis - Telegram Analysis tool
 _______
 ###### Установка / Installing.
 ```
@@ -23,6 +25,8 @@ _______
 My Telegram Chanell - [@mav1_notes](https://t.me/mav1_notes).
 _______
 ###### Version Beta
+
+
 ```
 Не весь функционал может работать идеально, созадавайте issue, пишите в телеграм.
 Возможно анализ Каналов не будет работать.

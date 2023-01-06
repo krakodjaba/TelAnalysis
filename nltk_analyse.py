@@ -15,10 +15,11 @@ from utils import remove_chars_from_text, remove_emojis, clear_user
 import nltk_analyse
 import networkx as nx
 import matplotlib.pyplot as plt
-
+from nltk.stem.snowball import SnowballStemmer
+stemmer = SnowballStemmer("russian")
 
 spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_-+=№%༺༺\༺/༺-•'
-def analyse(data):
+def analyse(data, most_com):
     russian_stopwords = stopwords.words("russian")
     russian_stopwords.extend(['это','ну','но','еще','ещё','оно','типа'])
     english_stopwords = stopwords.words("english")
@@ -28,16 +29,17 @@ def analyse(data):
     text = remove_chars_from_text(text, string.digits)
     text = remove_emojis(text)
     text_tokens = word_tokenize(text)
-    text_tokens = [token.strip() for token in text_tokens if token not in russian_stopwords and len(token) >= 2 and len(token) < 26 and token not in english_stopwords and 'http' not in token and token not in stopwords_list.stopword_txt]
+    text_tokens = [stemmer.stem(word) for word in text_tokens]
+    text_tokens = [token.strip() for token in text_tokens if token not in russian_stopwords and len(token) >= 4 and len(token) < 26 and token not in english_stopwords and 'http' not in token and token not in stopwords_list.stopword_txt]
     text = nltk.Text(text_tokens)
     #print(text)
     fdist = FreqDist(text)
-    fdist = fdist.most_common(30)
+    fdist = fdist.most_common(most_com)
     #
     #print(fdist)
     return fdist, text_tokens
 
-def analyse_all(data):
+def analyse_all(data, most_com):
     russian_stopwords = stopwords.words("russian")
     english_stopwords = stopwords.words("english")
     russian_stopwords.extend(['это','ну','но','еще','ещё','оно','типа'])
@@ -52,10 +54,14 @@ def analyse_all(data):
     else:
         text_tokens = ''
     #print(text_tokens)
-    text_tokens = [token.strip() for token in text_tokens if token not in russian_stopwords and len(token) >= 2 and len(token) < 26 and token not in english_stopwords and 'http' not in token and token not in stopwords_list.stopword_txt]
+    text_tokens = [stemmer.stem(word) for word in text_tokens]
+    text_tokens = [token.strip() for token in text_tokens if token not in russian_stopwords and len(token) >= 4 and len(token) < 26 and token not in english_stopwords and 'http' not in token and token not in stopwords_list.stopword_txt]
     text = nltk.Text(text_tokens)
     fdist = FreqDist(data)
-    fdist = fdist.most_common(30)
+    fdist = fdist.most_common(most_com)
     #
     #print(fdist)
-    return fdist
+    data = list()
+    for i in fdist:
+        data.append(i[0])
+    return fdist, data

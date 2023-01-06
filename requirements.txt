@@ -4,3 +4,4 @@ nltk
 networkx
 matplotlib
 emoji
+wordcloud

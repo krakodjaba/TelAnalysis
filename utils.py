@@ -1,8 +1,16 @@
 import re
 import string
 import emoji
+import os
+import subprocess
+import platform
 spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_-+=№%༺༺\༺/༺-•'
-    
+def clear_console():
+    system = platform.system()
+    if system == 'Windows':
+        subprocess.run('cls', shell=True)
+    elif system == 'Darwin' or system == 'Linux':
+        subprocess.run('clear', shell=True)
 def remove_chars_from_text(text, char=None):
     if char:
         char = char

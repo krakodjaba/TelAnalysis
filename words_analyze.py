@@ -6,8 +6,6 @@ from pywebio.output import put_html,put_text,put_image, put_button, put_code, cl
 from pywebio.input import file_upload as file
 from pywebio.session import run_js
 import json, re, jmespath, string, collections
-import networkx as nx
-import matplotlib.pyplot as plt
 
 config(theme='dark',title="TelAnalysis", description="Analysing Telegram CHATS-CHANNELS-GROUPS")
 put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
@@ -144,7 +142,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                     #user = user.split()
                     #print(user)
                     exec('da = {}_list'.format(user))
-                    genuy, tokens = nltk_analyse.analyse(da)
+                    genuy, tokens = nltk_analyse.analyse(da, 30)
                     for token in tokens:
                         all_tokens.append(token)
                     if len(da) >=1:
@@ -172,7 +170,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
         except Exception as ex:
             put_text(f'{ex} error #6')
             continue
-    all_tokens = nltk_analyse.analyse_all(all_tokens)
+    all_tokens,data = nltk_analyse.analyse_all(all_tokens, 30)
     put_text("\nАнализ Всего чата:")
     for i in all_tokens:
         try:

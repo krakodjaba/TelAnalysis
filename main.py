@@ -1,12 +1,12 @@
 #Telanalysis by mav1 @leetheck @mav1_notes
 
 from pywebio import start_server, input, config
-from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file
+from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file,Output
 from pywebio.input import file_upload as file
 from pywebio.session import run_js
-import json, re, jmespath, string, collections
-from utils import remove_chars_from_text, remove_emojis, clear_user
-import nltk_analyse
+import json, re, jmespath, string, collections, time
+from utils import remove_chars_from_text, remove_emojis, clear_user, clear_console
+import nltk_analyse, channel_analyse
 import networkx as nx
 import matplotlib.pyplot as plt
 #import words_analyze
@@ -15,6 +15,7 @@ config(theme='dark',title="TelAnalysis", description="Analysing Telegram CHATS-C
 
 
 def generator(filename):
+    clear_console()
     filename = filename.split(".")[0]
     filename = filename.split("/")[1]
     dates_list = list()
@@ -239,6 +240,7 @@ def generator(filename):
 
 
 def start_gen():
+    clear_console()
     clear()
     put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
     put_html("<h1><center>Graph of Telegram Chat<center></h1><br>")
@@ -249,6 +251,7 @@ def start_gen():
     
 
 def start_two():
+    clear_console()
     clear()
     put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
     put_html("<h1><center>Analyse of Telegram Chat<center></h1><br>")
@@ -259,21 +262,45 @@ def start_two():
     import os
     os.system(f'python words_analyze.py {filename}')
     
+def start_three():
+    clear_console()
+    clear()
+    put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
+    put_html("<h1><center>Analyse of Telegram Channel<center></h1><br>")
+    put_button("Return",onclick=lambda: run_js('window.location.reload()'), color='danger')
+    f = file("Select a file:", accept='.json')
+    open('asset/'+f['filename'], 'wb').write(f['content'])
+    filename = 'asset/'+f['filename']
+    import os
+    #os.system(f'python channel_ana.py {filename}')
+    channel_analyse.channel(filename)
 
 def default():
+    # put_html(f'<link rel="stylesheet" type="text/css" href="style.css">')
     clear()
+    clear_console()
     put_html("<h1><center>Welcome to TelAnalysis<center></h1>")
-    put_html("<h3>Select a file:</h3>")
+    put_html("<h3>Select a module:</h3>")
     put_button("Generating Graphs", onclick=start_gen)
-    put_button("Analysing Data", onclick=start_two)
+    put_button("Analysing Chat", onclick=start_two)
+    put_button("Analysing Channel", onclick=start_three)
     
+def starting():
+    clear_console()
+    while True:
+        try:
+            import os
+            if not os.path.exists('asset'):
+                os.makedirs('asset')
+            os.system('open http://127.0.0.1:9993')
+            start_server(default, host='127.0.0.1', port=9993, debug=True, background='gray')
+        except KeyboardInterrupt:
+            break
+            exit()
+        except Exception as ex:
+            print(ex)
+            break
+    exit(1)
 
 if __name__ == "__main__":
-    try:
-        import os
-        if not os.path.exists('asset'):
-            os.makedirs('asset')
-        os.system('open http://127.0.0.1:9993')
-        start_server(default, host='127.0.0.1', port=9993, debug=True, background='gray')
-    except KeyboardInterrupt:
-        exit()
+    starting()

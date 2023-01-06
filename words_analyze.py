@@ -34,7 +34,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                     user = user.replace(" ","")
                 except:
                     put_text("error #9")
-                print(user)
+                #print(user)
                 users.append(user)
                 
                 try:
@@ -142,7 +142,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                     put_text(f'Сообщения {user}:')
                     user = user.replace(" ","")
                     #user = user.split()
-                    print(user)
+                    #print(user)
                     exec('da = {}_list'.format(user))
                     genuy, tokens = nltk_analyse.analyse(da)
                     for token in tokens:

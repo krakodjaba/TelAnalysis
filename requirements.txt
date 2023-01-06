@@ -3,3 +3,4 @@ jmespath
 nltk
 networkx
 matplotlib
+emoji

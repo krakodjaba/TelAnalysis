@@ -42,9 +42,9 @@ def generator(filename):
                 names.append(name_id)  
                 message = jmespath.search('text',i)
                 if str(type(message)) == "<class 'list'>":
-                    print(message)
+                    #print(message)
                     for textt in message:
-                        print(textt)
+                        #print(textt)
                         try:
                             test = textt[:-1]
                             test = test.replace("\\n","").replace("\n","").strip()
@@ -54,44 +54,50 @@ def generator(filename):
                                 message = test
                         except:
                             continue
-                if message == "":
-                    continue
-                reply_to_message_id = jmespath.search('reply_to_message_id',i)
-                if reply_to_message_id is not None:
-                    for i in sf:
-                        message_id = jmespath.search('id', i)
-                        if reply_to_message_id == message_id:
-                            reply_to = jmespath.search('from', i)
-                            reply_to_id = jmespath.search('from_id',i)
-                            name_id = f'{reply_to}, {reply_to_id}'
-                            names.append(name_id)
-                            #names.append(name_id)
-                            try:
-                                open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{reply_to_id},{fromm}-{reply_to}')   
-                            except:
-                                pass
-                            datas = f"""
-        from: {fromm}
-        from_id: {from_id}
-        reply_to: {reply_to}
-        reply_to_id: {reply_to_id}
-        text: {message}
-        date: {date}
-        """ 
-                            #add_base(fromm,from_id,message,reply_to,reply_to_id, date)
                 else:
                     try:
-                        open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{from_id},{fromm}')  
+                        message = remove_emojis(message)
                     except:
-                        pass
-                    datas = f"""
-        from: {fromm}
-        from_id: {from_id}
-        text: {message}
-        date: {date}
-        """
-                    #add_base(fromm,from_id,message,fromm,from_id, date)
-                    put_code(datas)
+                        message = message
+                if message == "":
+                    continue
+                else:
+                    reply_to_message_id = jmespath.search('reply_to_message_id',i)
+                    if reply_to_message_id is not None:
+                        for i in sf:
+                            message_id = jmespath.search('id', i)
+                            if reply_to_message_id == message_id:
+                                reply_to = jmespath.search('from', i)
+                                reply_to_id = jmespath.search('from_id',i)
+                                name_id = f'{reply_to}, {reply_to_id}'
+                                names.append(name_id)
+                                #names.append(name_id)
+                                try:
+                                    open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{reply_to_id},{fromm}-{reply_to}')   
+                                except:
+                                    pass
+                                datas = f"""
+            from: {fromm}
+            from_id: {from_id}
+            reply_to: {reply_to}
+            reply_to_id: {reply_to_id}
+            text: {message}
+            date: {date}
+            """ 
+                                #add_base(fromm,from_id,message,reply_to,reply_to_id, date)
+                    else:
+                        try:
+                            open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{from_id},{fromm}')  
+                        except:
+                            pass
+                        datas = f"""
+            from: {fromm}
+            from_id: {from_id}
+            text: {message}
+            date: {date}
+            """
+                        #add_base(fromm,from_id,message,fromm,from_id, date)
+                        put_code(datas)
         put_text("Users in Chat:")       
         open(f'asset/nodes_{filename}.csv','w', encoding='utf-8').write("")
         with open(f'asset/nodes_{filename}.csv','a', encoding='utf-8') as odin:
@@ -187,18 +193,29 @@ def generator(filename):
     try:
         #put_text("убрать",G.nodes(), G.edges())
         #G = nx.generators.ego_graph(G,1, radius=2)
-        pos = nx.spring_layout(G, k=0.45, iterations=35)
-        nx.draw(G,pos, with_labels=True,labels=labels,font_weight='bold', node_size=sizes, node_color=colors)
-        
+        try:
+            pos = nx.circular_layout(G)
+        except:
+            put_text("error #14")
+        try:
+
+            nx.draw(G,pos, with_labels=True,labels=labels,font_weight='bold', node_size=sizes, node_color=colors)
+            try:
+                plt.savefig(f'asset/{filename}.png', bbox_inches='tight')
+                img = open(f'asset/{filename}.png','rb').read()
+            except:
+                put_text("error #16")
+            try:
+                put_image(img, width='600px')
+            except Exception as ex:
+                put_text(f"Error: {ex}")
+        except Exception as ex:
+            put_html(f"error #15 {ex}<br>Perhaps the chat is too large, the preliminary graph could not be generated.<br>Try to make graph in Gephi with below files.")
         #G = G.to_undirected
         #l = forceatlas2.forceatlas2_networkx_layout(G)
         #plt.show()
-        plt.savefig(f'asset/{filename}.png')
-        img = open(f'asset/{filename}.png','rb').read()
-        try:
-            put_image(img, width='600px')
-        except Exception as ex:
-            put_text(f"Error: {ex}")
+
+        #plt.tight_layout()
     except Exception as ex:
         put_text(f"Error in generating image.:{ex}")
     put_text("Files:")

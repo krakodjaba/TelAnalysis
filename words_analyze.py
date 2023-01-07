@@ -1,4 +1,4 @@
-from utils import remove_chars_from_text, remove_emojis, clear_user
+from utils import remove_chars_from_text, remove_emojis, clear_user, read_conf
 import nltk_analyse
 import sys
 from pywebio import input, config
@@ -80,7 +80,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
         elif str(type(texts)) == "<class 'list'>":
             for textt in texts:
                 try:
-                    if len(textt['text']) >1:
+                    if len(textt['text']) >=1:
                         test = textt['text']
                         
                         if "http" in test:
@@ -142,7 +142,8 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                     #user = user.split()
                     #print(user)
                     exec('da = {}_list'.format(user))
-                    genuy, tokens = nltk_analyse.analyse(da, 30)
+                    most_com = read_conf('most_com')
+                    genuy, tokens = nltk_analyse.analyse(da, most_com)
                     for token in tokens:
                         all_tokens.append(token)
                     if len(da) >=1:
@@ -170,7 +171,8 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
         except Exception as ex:
             put_text(f'{ex} error #6')
             continue
-    all_tokens,data = nltk_analyse.analyse_all(all_tokens, 30)
+    most_com = read_conf('most_com')
+    all_tokens,data = nltk_analyse.analyse_all(all_tokens,most_com)
     put_text("\nАнализ Всего чата:")
     for i in all_tokens:
         try:

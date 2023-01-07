@@ -5,7 +5,14 @@ from pywebio.input import file_upload as file
 from pywebio.session import run_js
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+from utils import read_conf
+
+global select_type_stem
+select_type_stem = read_conf('select_type_stem')
+
+
 def channel(filename):
+    most_com = read_conf('most_com_channel')
     filename = filename.split(".")[0]
     filename = filename.split("/")[1]
     with open(f'asset/{filename}.json', 'r', encoding='utf-8') as f:
@@ -41,14 +48,14 @@ def channel(filename):
                     message = utils.remove_emojis(message)
                     text_list.append(message)
         #print(len(text_list))
-        fdist, tokens = nltk_analyse.analyse(text_list, 100)
+        fdist, tokens = nltk_analyse.analyse(text_list, most_com)
         all_tokens = list()
         #print(tokens)
         for token in tokens:
             all_tokens.append(token)
             #print(token)
         #print(len(all_tokens))
-        all_tokens, data = nltk_analyse.analyse_all(all_tokens, 100)
+        all_tokens, data = nltk_analyse.analyse_all(all_tokens, most_com)
         #print(all_tokens)
         text_raw = " ".join(data)
         #max_wordss = (10 / 100) * len(data)
@@ -58,10 +65,10 @@ def channel(filename):
         wordcloud.save(filename_path)
         img = open(filename_path,'rb').read()
         time.sleep(2)
-        put_text("Wordcloud[100]:")
+        put_text(f"Wordcloud[{most_com}]:")
         put_image(img, width='600px')
         put_text(f"\nCount of all tokens: {len(tokens)}")
-        put_text("\nСhannel frequency analysis[100]:")
+        put_text(f"\nСhannel frequency analysis[{most_com}]:")
         for i in all_tokens:
             try:
                 m = m = f'  {i[0]} - {i[1]}'

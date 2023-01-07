@@ -4,7 +4,24 @@ import emoji
 import os
 import subprocess
 import platform
+import json, jmespath
+
 spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_-+=№%༺༺\༺/༺-•'
+
+##config telanalysis
+def read_conf(option):
+    try:
+        with open('config.json', 'r') as read_conf:
+            read_conf = json.load(read_conf)
+            select_type_stem = jmespath.search(f'{option}',read_conf)
+        return select_type_stem
+    except:
+        write_conf('{"select_type_stem": "Off", "most_com": 30, "most_com_channel":100}')
+
+def write_conf(dct):
+    with open('config.json', 'w') as fw:
+        json.dump(dct, fw)
+
 def clear_console():
     system = platform.system()
     if system == 'Windows':

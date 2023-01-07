@@ -1,16 +1,18 @@
 #Telanalysis by mav1 @leetheck @mav1_notes
 
 from pywebio import start_server, input, config
-from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file,Output
+from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file,Output, toast
 from pywebio.input import file_upload as file
 from pywebio.session import run_js
+from pywebio.input import select, slider
 import json, re, jmespath, string, collections, time
-from utils import remove_chars_from_text, remove_emojis, clear_user, clear_console
+from utils import remove_chars_from_text, remove_emojis, clear_user, clear_console, read_conf, write_conf
 import nltk_analyse, channel_analyse
 import networkx as nx
 import matplotlib.pyplot as plt
-#import words_analyze
 
+global select_type_stem
+## config pywebio
 config(theme='dark',title="TelAnalysis", description="Analysing Telegram CHATS-CHANNELS-GROUPS")
 
 
@@ -47,13 +49,14 @@ def generator(filename):
                     for textt in message:
                         #print(textt)
                         try:
-                            test = textt[:-1]
+                            test = textt['text']
                             test = test.replace("\\n","").replace("\n","").strip()
                             try:
                                 message = remove_emojis(test)
                             except:
                                 message = test
-                        except:
+                        except Exception as ex:
+                            toast(ex)
                             continue
                 else:
                     try:
@@ -275,10 +278,56 @@ def start_three():
     #os.system(f'python channel_ana.py {filename}')
     channel_analyse.channel(filename)
 
+def config():
+    #def config_back():
+
+    while True:
+        clear_console()
+        try:
+            clear()
+            put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
+            put_html("<h1><center>Configuration<center></h1>")
+            put_text(f"select_type_stem: {read_conf('select_type_stem')}")
+            put_text(f"select_type_stem: {read_conf('most_com')}")
+            put_text(f"select_type_stem: {read_conf('most_com_channel')}")
+            select_type_stem = select('Stemming mode:', ['Off','On'], multiple=False)
+            most_com = read_conf('most_com')
+            most_com_channel = read_conf('most_com_channel')
+            write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
+            toast("Config saved.")
+        except Exception as ex:
+            toast(f"Error: {ex}")
+        try:
+            clear()
+            put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
+            put_html("<h1><center>Configuration<center></h1>")
+            put_text(f"select_type_stem: {read_conf('select_type_stem')}")
+            put_text(f"select_type_stem: {read_conf('most_com')}")
+            put_text(f"select_type_stem: {read_conf('most_com_channel')}")
+            most_com = slider('Most Common words [USER]:')
+            most_com_channel = read_conf('most_com_channel')
+            write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
+            toast("Config saved.")
+        except Exception as ex:
+            toast(f"Error: {ex}")
+        try:
+            clear()
+            put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
+            put_html("<h1><center>Configuration<center></h1>")
+            put_text(f"select_type_stem: {read_conf('select_type_stem')}")
+            put_text(f"select_type_stem: {read_conf('most_com')}")
+            put_text(f"select_type_stem: {read_conf('most_com_channel')}")
+            most_com_channel = slider('Most Common words [Channel]:')
+            write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
+            toast("Config saved.")
+        except Exception as ex:
+            toast(f"Error: {ex}")
+
 def default():
     # put_html(f'<link rel="stylesheet" type="text/css" href="style.css">')
     clear()
     clear_console()
+    put_button("Config", onclick=config, color='warning')
     put_html("<h1><center>Welcome to TelAnalysis<center></h1>")
     put_html("<h3>Select a module:</h3>")
     put_button("Generating Graphs", onclick=start_gen)
@@ -287,7 +336,20 @@ def default():
     
 def starting():
     clear_console()
+    try:
+        if not os.path.exists('config.json'):
+            write_conf({"select_type_stem": "Off", "most_com": 30, "most_com_channel":100})
+        else:
+            select_type_stem = read_conf('select_type_stem')
+            most_com = read_conf('most_com')
+            most_com_channel = read_conf('most_com_channel')
+    except:
+        write_conf({"select_type_stem": "Off", "most_com": 30, "most_com_channel":100})
+        pass
     while True:
+        import nltk
+        nltk.download('stopwords')
+        nltk.download('punkt')
         try:
             import os
             if not os.path.exists('asset'):

@@ -11,14 +11,18 @@ from pywebio.output import put_html,put_text,put_image, put_button, put_code, cl
 from pywebio.input import file_upload as file
 from pywebio.session import run_js
 import json, re, jmespath, string, collections
-from utils import remove_chars_from_text, remove_emojis, clear_user
+from utils import remove_chars_from_text, remove_emojis, clear_user, read_conf
 import nltk_analyse
 import networkx as nx
 import matplotlib.pyplot as plt
 from nltk.stem.snowball import SnowballStemmer
+
+
 stemmer = SnowballStemmer("russian")
 
 spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_-+=№%༺༺\༺/༺-•'
+
+
 def analyse(data, most_com):
     russian_stopwords = stopwords.words("russian")
     russian_stopwords.extend(['это','ну','но','еще','ещё','оно','типа'])
@@ -29,7 +33,10 @@ def analyse(data, most_com):
     text = remove_chars_from_text(text, string.digits)
     text = remove_emojis(text)
     text_tokens = word_tokenize(text)
-    text_tokens = [stemmer.stem(word) for word in text_tokens]
+    if read_conf('select_type_stem') == 'On':
+        text_tokens = [stemmer.stem(word) for word in text_tokens]
+    else:
+        pass
     text_tokens = [token.strip() for token in text_tokens if token not in russian_stopwords and len(token) >= 4 and len(token) < 26 and token not in english_stopwords and 'http' not in token and token not in stopwords_list.stopword_txt]
     text = nltk.Text(text_tokens)
     #print(text)
@@ -54,7 +61,10 @@ def analyse_all(data, most_com):
     else:
         text_tokens = ''
     #print(text_tokens)
-    text_tokens = [stemmer.stem(word) for word in text_tokens]
+    if read_conf('select_type_stem') == 'On':
+        text_tokens = [stemmer.stem(word) for word in text_tokens]
+    else:
+        pass
     text_tokens = [token.strip() for token in text_tokens if token not in russian_stopwords and len(token) >= 4 and len(token) < 26 and token not in english_stopwords and 'http' not in token and token not in stopwords_list.stopword_txt]
     text = nltk.Text(text_tokens)
     fdist = FreqDist(data)

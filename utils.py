@@ -6,7 +6,7 @@ import subprocess
 import platform
 import json, jmespath
 
-spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_-+=№%༺༺\༺/༺-•'
+spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_+=№%༺༺\༺/༺•'
 
 ##config telanalysis
 def read_conf(option):
@@ -28,6 +28,12 @@ def clear_console():
         subprocess.run('cls', shell=True)
     elif system == 'Darwin' or system == 'Linux':
         subprocess.run('clear', shell=True)
+def open_url():
+    system = platform.system()
+    if system == 'Windows':
+        subprocess.run(f'start http://127.0.0.1:9993', shell=True)
+    elif system == 'Darwin' or system == 'Linux':
+        subprocess.run('open http://127.0.0.1:9993', shell=True)
 def remove_chars_from_text(text, char=None):
     if char:
         char = char
@@ -713,7 +719,7 @@ def remove_emojis(data):
                         "]+", re.UNICODE)"""
     emoj = re.compile(r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])')
     data = re.sub(emoj, '', data)
-    spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_-+=№%༺༺\༺/༺-•'
+    spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_+=№%༺༺\༺/༺•'
     data = remove_chars_from_text(data, spec_chars)
     data = re.sub(r'[\x00-\x7f]', ' ', data)
     data = data.replace("  "," ").strip()
@@ -728,7 +734,7 @@ def remove_emojis(data):
     return str(data).replace("[","").replace("]","").replace("'","").replace("  ","").replace(",","")
 
 def clear_user(user):
-    spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_-+=№%༺༺\༺/༺-•'
+    spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_+=№%༺༺\༺/༺•'
     user = str(user).replace(" ","").replace('"','').replace(".","").replace("꧁","").replace(spec_chars, "")
     user = remove_chars_from_text(user)
     user = remove_emojis(user)

@@ -6,7 +6,7 @@ from pywebio.input import file_upload as file
 from pywebio.session import run_js
 from pywebio.input import select, slider
 import json, re, jmespath, string, collections, time
-from utils import remove_chars_from_text, remove_emojis, clear_user, clear_console, read_conf, write_conf
+from utils import remove_chars_from_text, remove_emojis, clear_user, clear_console, read_conf, write_conf,open_url
 import nltk_analyse, channel_analyse
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -271,9 +271,9 @@ def start_three():
     put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
     put_html("<h1><center>Analyse of Telegram Channel<center></h1><br>")
     put_button("Return",onclick=lambda: run_js('window.location.reload()'), color='danger')
-    f = file("Select a file:", accept='.json')
-    open('asset/'+f['filename'], 'wb').write(f['content'])
-    filename = 'asset/'+f['filename']
+    #f = file("Select a file:", accept='.json')
+    # open('asset/'+f['filename'], 'wb').write(f['content'])
+    filename = 'asset/'+'result.json'#f['filename']
     import os
     #os.system(f'python channel_ana.py {filename}')
     channel_analyse.channel(filename)
@@ -288,8 +288,8 @@ def config():
             put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
             put_html("<h1><center>Configuration<center></h1>")
             put_text(f"select_type_stem: {read_conf('select_type_stem')}")
-            put_text(f"select_type_stem: {read_conf('most_com')}")
-            put_text(f"select_type_stem: {read_conf('most_com_channel')}")
+            put_text(f"most_common: {read_conf('most_com')}")
+            put_text(f"most_common_channel: {read_conf('most_com_channel')}")
             select_type_stem = select('Stemming mode:', ['Off','On'], multiple=False)
             most_com = read_conf('most_com')
             most_com_channel = read_conf('most_com_channel')
@@ -302,8 +302,8 @@ def config():
             put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
             put_html("<h1><center>Configuration<center></h1>")
             put_text(f"select_type_stem: {read_conf('select_type_stem')}")
-            put_text(f"select_type_stem: {read_conf('most_com')}")
-            put_text(f"select_type_stem: {read_conf('most_com_channel')}")
+            put_text(f"most_common: {read_conf('most_com')}")
+            put_text(f"most_common_channel: {read_conf('most_com_channel')}")
             most_com = slider('Most Common words [USER]:')
             most_com_channel = read_conf('most_com_channel')
             write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
@@ -315,8 +315,8 @@ def config():
             put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
             put_html("<h1><center>Configuration<center></h1>")
             put_text(f"select_type_stem: {read_conf('select_type_stem')}")
-            put_text(f"select_type_stem: {read_conf('most_com')}")
-            put_text(f"select_type_stem: {read_conf('most_com_channel')}")
+            put_text(f"most_common: {read_conf('most_com')}")
+            put_text(f"most_common_channel: {read_conf('most_com_channel')}")
             most_com_channel = slider('Most Common words [Channel]:')
             write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
             toast("Config saved.")
@@ -350,11 +350,12 @@ def starting():
         import nltk
         nltk.download('stopwords')
         nltk.download('punkt')
+        clear_console()
         try:
             import os
             if not os.path.exists('asset'):
                 os.makedirs('asset')
-            os.system('open http://127.0.0.1:9993')
+            open_url()
             start_server(default, host='127.0.0.1', port=9993, debug=True, background='gray')
         except KeyboardInterrupt:
             break

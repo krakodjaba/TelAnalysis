@@ -1,7 +1,7 @@
 # TelAnalysis
-![image](https://user-images.githubusercontent.com/107117398/209858730-fe6ff0a3-9fcd-4d13-be6a-3f2a6bdd198b.png)
-# 
 [![asciicast](https://user-images.githubusercontent.com/107117398/213977412-12138f32-e736-434f-9dd4-aed7df895aad.jpg)](https://user-images.githubusercontent.com/107117398/210658121-01c8eac5-ef5b-4b1d-a178-90e31d2b7071.mp4)
+# 
+![image](https://user-images.githubusercontent.com/107117398/209858730-fe6ff0a3-9fcd-4d13-be6a-3f2a6bdd198b.png)
 # TelAnalysis - Telegram Analysis tool
 _______
 ###### Установка / Installing.

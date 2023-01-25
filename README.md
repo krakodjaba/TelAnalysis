@@ -1,7 +1,7 @@
 # TelAnalysis
 # 
-[![asciicast](https://user-images.githubusercontent.com/107117398/213977412-12138f32-e736-434f-9dd4-aed7df895aad.jpg)](https://user-images.githubusercontent.com/107117398/214507242-1080b7f4-8d5d-45b1-95ae-4a334530943d.mp4)
-
+[![asciicast](https://user-images.githubusercontent.com/107117398/213977412-12138f32-e736-434f-9dd4-aed7df895aad.jpg)](
+https://user-images.githubusercontent.com/107117398/214507633-a97bf2ce-ff63-45f1-9bee-ba90d82f1fca.mp4)
 
 ![image](https://user-images.githubusercontent.com/107117398/209858730-fe6ff0a3-9fcd-4d13-be6a-3f2a6bdd198b.png)
 # TelAnalysis - Telegram Analysis tool

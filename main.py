@@ -263,7 +263,7 @@ def start_two():
     open('asset/'+f['filename'], 'wb').write(f['content'])
     filename = 'asset/'+f['filename']
     import os
-    os.system(f'python words_analyze.py {filename}')
+    os.system(f'python3 words_analyze.py {filename}')
     
 def start_three():
     clear_console()
@@ -271,11 +271,11 @@ def start_three():
     put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
     put_html("<h1><center>Analyse of Telegram Channel<center></h1><br>")
     put_button("Return",onclick=lambda: run_js('window.location.reload()'), color='danger')
-    #f = file("Select a file:", accept='.json')
-    # open('asset/'+f['filename'], 'wb').write(f['content'])
-    filename = 'asset/'+'result.json'#f['filename']
+    f = file("Select a file:", accept='.json')
+    open('asset/'+f['filename'], 'wb').write(f['content'])
+    filename = 'asset/'+f['filename']
     import os
-    #os.system(f'python channel_ana.py {filename}')
+    #os.system(f'python3 channel_ana.py {filename}')
     channel_analyse.channel(filename)
 
 def config():

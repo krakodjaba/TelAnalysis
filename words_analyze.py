@@ -2,15 +2,19 @@ from utils import remove_chars_from_text, remove_emojis, clear_user, read_conf
 import nltk_analyse
 import sys
 from pywebio import input, config
-from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file
+from pywebio.output import put_html,put_text,put_image,put_collapse, put_button, put_code, clear, put_file, popup, put_table
 from pywebio.input import file_upload as file
 from pywebio.session import run_js
 import json, re, jmespath, string, collections
+from pywebio.input import input
+from pywebio.pin import *
 
 config(theme='dark',title="TelAnalysis", description="Analysing Telegram CHATS-CHANNELS-GROUPS")
 put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
-put_html("<h1><center>Analyse of Telegram Chat<center></h1><br>")
 put_button("Close",onclick=lambda: run_js('window.close()'), color='danger')
+put_html("<h1><center>Analyse of Telegram Chat<center></h1><br>")
+put_input('ID')
+put_button("Search ID",onclick=lambda: run_js(f'window.find({pin.ID}, true)'), color='warning')
 all_tokens = []
 users = []
 count_messages = 0
@@ -20,35 +24,37 @@ filename = filename.split("/")[1]
 with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
     data = json.load(datas)
     sf = jmespath.search('messages[*]',data)
+    group_name = jmespath.search('name', data)
     for message in sf:
         try:
-            user = jmespath.search('from', message)
+            user = jmespath.search('from_id', message)
             if user and user != '':
-                user = clear_user(user)
+                #user = clear_user(user)
                 #print(user)
-            if user not in users and user is not None:
-                #user = str(user).replace(" ","").replace('"','').replace(".","").replace("꧁","")
-                try:
-                    user = user.replace(" ","")
-                except:
-                    put_text("error #9")
-                #print(user)
-                users.append(user)
-                
-                try:
-                    exec('{}_list = []'.format(user))
-                except Exception as ex:
-                    put_code(ex, user)
-                    continue
-        except:
+                if user not in users and user is not None:
+                    #user = str(user).replace(" ","").replace('"','').replace(".","").replace("꧁","")
+                    try:
+                        user = user.replace(" ","")
+                    except:
+                        put_text("error #9")
+                    #print(user)
+                    users.append(user)
+                    
+                    try:
+                        exec('{}_list = []'.format(user))
+                    except Exception as ex:
+                        put_code(ex, user)
+                        continue
+        except Exception as ex:
+            print(ex, 92141)
             continue
     for message in sf:
         texts = jmespath.search('text',message)
-        from_user = jmespath.search('from', message)
+        from_user = jmespath.search('from_id', message)
         if from_user is None:
             continue
         else:
-            from_user = clear_user(from_user)
+            #from_user = clear_user(from_user)
             from_user = from_user.replace(" ","")
             #print(from_user)
         if str(type(texts)) == "<class 'str'>":
@@ -73,8 +79,10 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                             continue
                         else:
                             exec('{}_list.append("{}")'.format(from_user,str(test)))
+                            #exec('id_{}_list = []'.format(user))
                             #print('{}_list.append("{}")'.format(from_user,str(test)))
                     except Exception as ex:
+                        print(ex)
                         continue
                     count_messages +=1
         elif str(type(texts)) == "<class 'list'>":
@@ -137,35 +145,44 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
         try:
             try:
                 if user and user != "":
-                    put_text(f'Сообщения {user}:')
                     user = user.replace(" ","")
-                    #user = user.split()
-                    #print(user)
                     exec('da = {}_list'.format(user))
                     most_com = read_conf('most_com')
                     genuy, tokens = nltk_analyse.analyse(da, most_com)
+                    gemy = []
+                    gery = []
+                    for x,y in genuy:
+                        gemy.append([x,y])
+                    genuy.clear()
+                    for x in da:
+                        gery.append([x])
+                    da.clear()
                     for token in tokens:
                         all_tokens.append(token)
-                    if len(da) >=1:
-                        #put_code("*"*90)
+                    if len(gery) >=1 and len(gemy) >=1:
+                        """ #put_code("*"*90)
                         put_code(f'--{i} {user}: ')
                         for j,ga in enumerate(da):
                             put_code(f'[{j}] {ga}')
-                    else:
+                        e   lse:
                         #print(da)
                         continue
-                    if len(genuy) >=1:
-                        put_text(f"\nАнализ сообщений {user}:")
-                        for i in genuy:
-                            try:
-                                m = f'  {i[0]} - {i[1]}'
-                                put_code(m)
-                            except Exception as ex:
-                                put_text(f"error #5 {ex}")
-                                pass
-                        put_text("__"*45)
-                    else:
-                        continue
+                         da = popup(user, [
+                                put_html(f'<h3>{user} Сообщения:</h3>'),
+                                'html: <br/>',
+                                put_table([['Сообщения'], [da]]),
+                                put_button(['close_popup()'], onclick=lambda _x: close_popup())
+                            ])"""
+                        put_collapse(user,
+                        [
+                        f'Messages of {user}',
+                            put_table(gery
+                            , header=['Messages']),
+                            put_table(gemy
+                            , header=['word', 'count'])],
+                             open=False)
+
+
             except Exception as ex:
                 put_text(f"[{user}] error #8 {ex}")
         except Exception as ex:
@@ -173,14 +190,18 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
             continue
     most_com = read_conf('most_com')
     all_tokens,data = nltk_analyse.analyse_all(all_tokens,most_com)
-    put_text("\nАнализ Всего чата:")
+    all_chat = []
     for i in all_tokens:
         try:
-            m = m = f'  {i[0]} - {i[1]}'
-            put_code(m)
+           all_chat.append([i[0],i[1]])
         except Exception as ex:
             put_text(f"error #7 {ex}")
             pass
-    put_text("__"*45)
+    put_collapse(f'TOP words of {group_name}',[
+                    put_table(all_chat
+                    , header=['word']),
+                    ],open=False)
+
+    
     put_button("Close",onclick=lambda: run_js('window.close()'), color='danger')
     put_button("Scroll Up",onclick=lambda: run_js('window.scrollTo(document.body.scrollHeight, 0)'))

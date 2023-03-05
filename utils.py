@@ -45,7 +45,7 @@ def remove_chars_from_text(text, char=None):
     
 def remove_emojis(data):
     
-    """emoj = re.compile("["
+    emoj = re.compile("["
         u"\U0001F600-\U0001F64F"
         u"\U0001F300-\U0001F5FF"
         u"\U0001F680-\U0001F6FF"
@@ -716,7 +716,18 @@ def remove_emojis(data):
         u"\U0001FAF5"
         u"\U0001FAF6"
         u"\u0e4b"
-                        "]+", re.UNICODE)"""
+        u"\u0489"
+        u"\u0338"
+        u"\u1D11E"
+        u"\u035E"
+        u"\u1F132"
+        u"\uA9C2"
+        u"\u0335"
+        u"\u00AD"
+        u"\u10121"
+        u"\u00BF"
+        u"\u1F153"
+                        "]+", re.UNICODE)
     emoj = re.compile(r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])')
     data = re.sub(emoj, '', data)
     spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_+=№%༺༺\༺/༺•'

@@ -275,7 +275,7 @@ def start_three():
     open('asset/'+f['filename'], 'wb').write(f['content'])
     filename = 'asset/'+f['filename']
     import os
-    #os.system(f'python3 channel_ana.py {filename}')
+    #os.system(f'python channel_ana.py {filename}')
     channel_analyse.channel(filename)
 
 def config():

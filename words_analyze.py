@@ -49,6 +49,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
             print(ex, 92141)
             continue
     for message in sf:
+        count_messages +=1
         texts = jmespath.search('text',message)
         from_user = jmespath.search('from_id', message)
         if from_user is None:
@@ -84,7 +85,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                     except Exception as ex:
                         print(ex)
                         continue
-                    count_messages +=1
+                    #count_messages +=1
         elif str(type(texts)) == "<class 'list'>":
             for textt in texts:
                 try:
@@ -110,7 +111,7 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                                     #print('{}_list.append("{}")'.format(from_user,str(test)))
                             except Exception as ex:
                                 continue
-                            count_messages +=1
+                            #count_messages +=1
                 except Exception as ex:
                     try:
                         try:
@@ -129,14 +130,13 @@ with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
                                 #print('{}_list.append("{}")'.format(from_user,str(test)))
                         except Exception as ex:
                             continue
-                        count_messages +=1
+                        #count_messages +=1
                     except:
                         put_text("error #4")
     
     
     try:
-        put_code(f'All used messages count: {count_messages}')
-        put_code(f'Messages from count users detected: {len(users)}')
+        put_table([count_messages, len(users)], header=['All used messages count','Messages from count users detected'])
     except Exception as ex:
         put_text(ex)
     

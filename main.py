@@ -206,9 +206,15 @@ def generator(filename):
         pass
 
     #put_text("First message date:")
-    put_table([str(dates_list[:1]).replace("[","").replace("]","").replace("'","").replace("T"," ")], header='First Message')
+    firstmes = str(dates_list[:1]).replace("[","").replace("]","").replace("'","").replace("T"," ")
+    lastmes = str(dates_list[-1:]).replace("[","").replace("]","").replace("'","").replace("T"," ")
+    firstmess = []
+    lastmess = []
+    lastmess.append(lastmes)
+    firstmess.append(firstmes)
+    put_table([firstmess], header=['First Message'])
     #put_text("Last message date:")
-    put_table([str(dates_list[-1:]).replace("[","").replace("]","").replace("'","").replace("T"," ")], header='Last Message')
+    put_table([lastmess], header=['Last Message'])
     
     try:
         #put_text("убрать",G.nodes(), G.edges())

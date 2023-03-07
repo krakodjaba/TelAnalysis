@@ -1,6 +1,6 @@
 import json, jmespath, nltk_analyse,utils, time
 from pywebio import input, config
-from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file
+from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file, put_table
 from pywebio.input import file_upload as file
 from pywebio.session import run_js
 from wordcloud import WordCloud
@@ -69,10 +69,8 @@ def channel(filename):
         put_image(img, width='600px')
         put_text(f"\nCount of all tokens: {len(tokens)}")
         put_text(f"\nСhannel frequency analysis[{most_com}]:")
-        for i in all_tokens:
-            try:
-                m = m = f'  {i[0]} - {i[1]}'
-                put_code(m)
-            except Exception as ex:
-                put_text(f"error #7 {ex}")
-                pass
+        gemy = []
+        for x,y in all_tokens:
+            gemy.append([x,y])
+        all_tokens.clear()
+        put_table(gemy, header=['word', 'count'])

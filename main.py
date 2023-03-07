@@ -1,7 +1,7 @@
 #Telanalysis by mav1 @leetheck @mav1_notes
 
 from pywebio import start_server, input, config
-from pywebio.output import put_html,put_text,put_image, put_button, put_code, clear, put_file,Output, toast
+from pywebio.output import put_html,put_text,put_image, put_button,put_table, put_collapse, put_code, clear, put_file,Output, toast
 from pywebio.input import file_upload as file
 from pywebio.session import run_js
 from pywebio.input import select, slider
@@ -17,20 +17,26 @@ config(theme='dark',title="TelAnalysis", description="Analysing Telegram CHATS-C
 
 
 def generator(filename):
+    tables = []
     clear_console()
     filename = filename.split(".")[0]
     filename = filename.split("/")[1]
     dates_list = list()
-    put_html(f"<center>Generating Graphs of <h4>[{filename}]</h4><center>")
-    put_text("Messages:")
+    #put_html(f"<center>Generating Graphs of <h4>[{filename}]</h4><center>")
+    #put_text("Messages:")
+    #toast(content='Wait Result..')
     names = []
     open(f'asset/edges_{filename}.csv','w', encoding='utf-8').write("")
     open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write("source,target,label")
     with open(f'asset/{filename}.json', 'r', encoding='utf-8') as f:
         #f = f.readlines()
         jsondata = json.load(f)
+        group_name = jmespath.search('name', jsondata)
+        put_html(f"<center><h1>{group_name}</h1><center>")
         sf = jmespath.search('messages[*]',jsondata)
+        toast(content='Wait Result..',duration=0)
         for i in sf:
+            # message_id = 
             fromm = jmespath.search('from', i)
             if fromm is None:
                 continue
@@ -45,9 +51,7 @@ def generator(filename):
                 names.append(name_id)  
                 message = jmespath.search('text',i)
                 if str(type(message)) == "<class 'list'>":
-                    #print(message)
                     for textt in message:
-                        #print(textt)
                         try:
                             test = textt['text']
                             test = test.replace("\\n","").replace("\n","").strip()
@@ -56,7 +60,8 @@ def generator(filename):
                             except:
                                 message = test
                         except Exception as ex:
-                            toast(ex)
+                            error = f"Error: {ex}"
+                            #toast(error)
                             continue
                 else:
                     try:
@@ -80,34 +85,42 @@ def generator(filename):
                                     open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{reply_to_id},{fromm}-{reply_to}')   
                                 except:
                                     pass
-                                datas = f"""
-            from: {fromm}
-            from_id: {from_id}
-            reply_to: {reply_to}
-            reply_to_id: {reply_to_id}
-            text: {message}
-            date: {date}
-            """ 
-                                #add_base(fromm,from_id,message,reply_to,reply_to_id, date)
+                                #datas = {"from": fromm, "from_id": from_id, "reply_to": reply_to,"reply_to_id": reply_to_id,"text": message,"date": date}
+                               
                     else:
                         try:
                             open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{from_id},{fromm}')  
                         except:
                             pass
-                        datas = f"""
-            from: {fromm}
-            from_id: {from_id}
-            text: {message}
-            date: {date}
-            """
+                        """datas = {"from": fromm, "from_id": from_id,"text": message,"date": date}
                         #add_base(fromm,from_id,message,fromm,from_id, date)
-                        put_code(datas)
-        put_text("Users in Chat:")       
+                        try:
+                            if datas['reply_to']:
+                                datasss = [datas['from'],datas['from_id'],datas['reply_to'], datas['reply_to_id'], datas['text'],datas['date']]
+                                
+                                headers = ['FROM','FROM_ID','REPLY_TO','REPLY_TO_ID', 'TEXT','DATE']
+                                info = f'{datas["from"]} - {datas["from_id"]} >> {datas["reply_to"]} - {datas["reply_to_id"]}'
+                                datas.clear()
+                                datasss.clear()
+                        except:
+                                datasss = [datas['from'],datas['from_id'], datas['text'],datas['date']]
+                                headers = ['FROM','FROM_ID', 'TEXT','DATE']
+                                info = f'{datas["from"]} - {datas["from_id"]}'
+                                datas.clear()
+                                datasss.clear()
+            put_collapse(f'{info}',
+            [put_table([datasss]
+                , header=headers),
+                ],
+                    open=False)
+                        #tables.append([fromm, from_id,message,date])"""
+        #put_text("Users in Chat:")       
         open(f'asset/nodes_{filename}.csv','w', encoding='utf-8').write("")
         with open(f'asset/nodes_{filename}.csv','a', encoding='utf-8') as odin:
             odin.write('id,label,weight')
             c = collections.Counter(names)
             #stroka = name.split("',")
+            users_table = []
             for i in c:
                 id_stroka = i.split(',')[1]
                 if id_stroka == 'id' or id_stroka == 'label' or id_stroka == 'weight' or 'None' in id_stroka:
@@ -115,8 +128,11 @@ def generator(filename):
                 else:    
                     name_stroka = i.split(',')[0]
                     weight = c[i]
-                    put_code(f'\nID:{id_stroka.replace("user","")}, Username:{name_stroka}, Weight: {weight}')
+                    users_table.append([id_stroka.replace("user",""), name_stroka, weight])
+                    #put_code(f'\nID:{id_stroka.replace("user","")}, Username:{name_stroka}, Weight: {weight}')
                     odin.write(f'\n{id_stroka},{name_stroka},{weight}')
+        
+    put_table(users_table, header=['USER ID','USERNAME','COUNT'])
     
     try:
         G=nx.DiGraph()
@@ -147,7 +163,7 @@ def generator(filename):
                         if label not in nn_nodes:
                             nn_nodes.append(label)
                             #put_text("убрать",label)
-                            G.add_node(label, weight=weight, node_size=weight*10, node_color=color,rescale_layout=2)
+                            G.add_node(label, weight=weight, node_size=weight*8, node_color=color,rescale_layout=2)
                             #put_text("убрать",G.nodes[1])
         
         labels = {n: f"{n} - {G.nodes[n]['weight']}" for n in G.nodes}
@@ -189,10 +205,10 @@ def generator(filename):
         
         pass
 
-    put_text("First message date:")
-    put_code(str(dates_list[:1]).replace("[","").replace("]","").replace("'","").replace("T"," "))
-    put_text("Last message date:")
-    put_code(str(dates_list[-1:]).replace("[","").replace("]","").replace("'","").replace("T"," "))
+    #put_text("First message date:")
+    put_table([str(dates_list[:1]).replace("[","").replace("]","").replace("'","").replace("T"," ")], header='First Message')
+    #put_text("Last message date:")
+    put_table([str(dates_list[-1:]).replace("[","").replace("]","").replace("'","").replace("T"," ")], header='Last Message')
     
     try:
         #put_text("убрать",G.nodes(), G.edges())
@@ -237,7 +253,7 @@ def generator(filename):
         Graph_content = open(f'asset/{filename}.png', 'rb').read()
         put_file(f'asset/{filename}.png',label='Graph', content=Graph_content)
     except Exception as ex:
-        put_text(f"error: {ex}")
+        pass
     put_button("clear",onclick=lambda: run_js('window.location.reload()'))
     put_button("Scroll Up",onclick=lambda: run_js('window.scrollTo(document.body.scrollHeight, 0)'))
 
@@ -246,8 +262,8 @@ def start_gen():
     clear_console()
     clear()
     put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
-    put_html("<h1><center>Graph of Telegram Chat<center></h1><br>")
     put_button("Return",onclick=lambda: run_js('window.location.reload()'), color='danger')
+    put_html("<h1><center>Graph of Telegram Chat<center></h1><br>")
     f = file("Select a file:", accept='.json')
     open('asset/'+f['filename'], 'wb').write(f['content'])
     generator(f"asset/{f['filename']}")
@@ -257,8 +273,8 @@ def start_two():
     clear_console()
     clear()
     put_button("Scroll Down",onclick=lambda: run_js('window.scrollTo(0, document.body.scrollHeight)'))
-    put_html("<h1><center>Analyse of Telegram Chat<center></h1><br>")
     put_button("Return",onclick=lambda: run_js('window.location.reload()'), color='danger')
+    put_html("<h1><center>Analyse of Telegram Chat<center></h1><br>")
     f = file("Select a file:", accept='.json')
     open('asset/'+f['filename'], 'wb').write(f['content'])
     filename = 'asset/'+f['filename']
@@ -296,7 +312,8 @@ def config():
             write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
             toast("Config saved.")
         except Exception as ex:
-            toast(f"Error: {ex}")
+            error = f"Error: {ex}"
+            toast(error)
         try:
             clear()
             put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
@@ -309,7 +326,8 @@ def config():
             write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
             toast("Config saved.")
         except Exception as ex:
-            toast(f"Error: {ex}")
+            error = f"Error: {ex}"
+            toast(error)
         try:
             clear()
             put_button("Close",onclick=lambda: run_js('window.location.reload()'), color='danger')
@@ -321,7 +339,8 @@ def config():
             write_conf({"select_type_stem":select_type_stem, "most_com":most_com, "most_com_channel":most_com_channel})
             toast("Config saved.")
         except Exception as ex:
-            toast(f"Error: {ex}")
+            error = f"Error: {ex}"
+            toast(error)
 
 def default():
     # put_html(f'<link rel="stylesheet" type="text/css" href="style.css">')

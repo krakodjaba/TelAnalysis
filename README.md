@@ -1,7 +1,5 @@
 # TelAnalysis
-
-
-https://user-images.githubusercontent.com/107117398/223553362-8f24206e-55de-4ed2-bdd1-1d6093f8d60b.mp4
+<video src="https://user-images.githubusercontent.com/107117398/223553362-8f24206e-55de-4ed2-bdd1-1d6093f8d60b.mp4"></video>
 ![image](https://user-images.githubusercontent.com/107117398/223553327-a0ef0115-6cfe-4c38-9f0b-67062354a79c.png)
 ![image](https://user-images.githubusercontent.com/107117398/223553309-ba92ee44-ff54-4e3e-b49a-70596cde4198.png)
 ![image](https://user-images.githubusercontent.com/107117398/223553300-a5874615-fe67-4f8d-a042-df3aa5e3b0e6.png)

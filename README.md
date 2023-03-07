@@ -1,8 +1,10 @@
 # TelAnalysis
-# 
-[![asciicast](https://user-images.githubusercontent.com/107117398/213977412-12138f32-e736-434f-9dd4-aed7df895aad.jpg)](
-https://user-images.githubusercontent.com/107117398/214507633-a97bf2ce-ff63-45f1-9bee-ba90d82f1fca.mp4)
 
+
+https://user-images.githubusercontent.com/107117398/223553362-8f24206e-55de-4ed2-bdd1-1d6093f8d60b.mp4
+![image](https://user-images.githubusercontent.com/107117398/223553327-a0ef0115-6cfe-4c38-9f0b-67062354a79c.png)
+![image](https://user-images.githubusercontent.com/107117398/223553309-ba92ee44-ff54-4e3e-b49a-70596cde4198.png)
+![image](https://user-images.githubusercontent.com/107117398/223553300-a5874615-fe67-4f8d-a042-df3aa5e3b0e6.png)
 ![image](https://user-images.githubusercontent.com/107117398/209858730-fe6ff0a3-9fcd-4d13-be6a-3f2a6bdd198b.png)
 # TelAnalysis - Telegram Analysis tool
 _______
@@ -38,14 +40,3 @@ _______
 Not all functionality can work perfectly, create an issue, write in the telegram. Channel analysis may not work.
 ```
 _______
-```
-To do:
-Automatic archiving of the chat by link. 
-Improved graph generation mechanics.
-Add statistics for graphs.
-add statistics in Quantitative Analysis.
-Fix bugs Improve filtering Definition of Context Sentiment: Total Chat, Per User.
-Improved visualization of the interactions of some users with others with interactive selection.
-It is possible to connect additional tools and databases for output - comparison of information.
-Stylo & Volume analysis-comparison of several chat channels (Suppose there is a main chat and it is compared with another 10 channels, which channel is more similar in various parameters in style - vocabulary with the main one)
-```

@@ -6,6 +6,9 @@
 ![image](https://user-images.githubusercontent.com/107117398/209858730-fe6ff0a3-9fcd-4d13-be6a-3f2a6bdd198b.png)
 # TelAnalysis - Telegram Analysis tool
 _______
+
+An extended version with support for searching telegram account data in the database is available in the OSINT-SAN Framework.
+_______
 ###### Установка / Installing.
 ```
 pip install -r requirements

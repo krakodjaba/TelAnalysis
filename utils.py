@@ -4,8 +4,8 @@ import emoji
 import os
 import subprocess
 import platform
-import json, jmespath
-
+import json, jmespath, requests
+from pywebio.output import put_html,toast,put_text,put_image,put_collapse, put_button, put_code, clear, put_file, popup, put_table
 spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_+=№%༺༺\༺/༺•'
 
 ##config telanalysis
@@ -28,21 +28,130 @@ def clear_console():
         subprocess.run('cls', shell=True)
     elif system == 'Darwin' or system == 'Linux':
         subprocess.run('clear', shell=True)
+        
 def open_url():
     system = platform.system()
     if system == 'Windows':
         subprocess.run(f'start http://127.0.0.1:9993', shell=True)
     elif system == 'Darwin' or system == 'Linux':
         subprocess.run('open http://127.0.0.1:9993', shell=True)
+
 def remove_chars_from_text(text, char=None):
-    if char:
-        char = char
-    else:
+    if char is None:
         char = spec_chars
-    text = "".join([ch for ch in text if ch not in char])
-    #text = text.replace("  "," ")
-    return text 
     
+    # Используем регулярное выражение для замены нежелательных символов на пробелы
+    pattern = f"[{re.escape(char)}]"
+    text = re.sub(pattern, ' ', text)  # Заменяем спецсимволы на пробелы
+    text = re.sub(r'\s+', ' ', text).strip()  # Удаляем лишние пробелы
+    return text
+
+    toast(content='Wait Result..',duration=0)
+    phonenumbers = []
+    ids = []
+    telegram_ids = []
+    firstnames = []
+    surnames = []
+    emails = []
+    trades = []
+    social_medias = []
+    addresses = []
+    technicals_data = []
+    tg_id = int(tg_id.replace("user","").replace("channel","").strip())
+    if tg_id:
+        #print(int(tg_id))
+        req = requests.post(f'https://osintframework.ru/api/telegram/telegram-user-somevendor', json={"telegram_id": int(tg_id)},
+                                headers={"Authorization": token},
+                                timeout=60)
+        try:
+            finded_data = req.json()["telegram_id_somevendor"]["finded_data"]
+        except:
+            print('error')
+            print(req)
+            raise
+        if len(finded_data) == 0:
+            toast(content="Can't find result.",duration=1)
+            pass
+        else:
+            if finded_data:
+                #print(finded_data)
+                for i in finded_data:
+                    for j in i:
+                        if 'phone_number' in j:
+                            phonenumber = i[j]
+                            if phonenumber not in phonenumbers:
+                                phonenumbers.append(phonenumber)
+                        phonenumberss = '\n'.join(phonenumbers)
+                        if 'id' in j:
+                            id = i[j]
+                            if id not in ids:
+                                ids.append(id)
+                        try:
+                            idss = '\n'.join(ids)
+                        except:
+                            idss = ids
+                        if 'telegram_id' in j:
+                            telegram_id = i[j]
+                            if telegram_id not in telegram_ids:
+                                telegram_ids.append(telegram_id)
+                        try:
+                            telegram_idss = '\n'.join(telegram_ids)
+                        except:
+                            telegram_idss = telegram_ids
+                        if 'firstname' in j:
+                            firstname = i[j]
+                            if firstname not in firstnames:
+                                firstnames.append(firstname)
+                        firstnamess = '\n'.join(firstnames)
+                        if 'surname' in j:
+                            surname = i[j]
+                            if surname not in surnames:
+                                surnames.append(surname)
+                        surnamess = '\n'.join(surnames)
+                        if 'email' in j:
+                            email = i[j]
+                            if email not in emails:
+                                emails.append(email)
+                        emailss = '\n'.join(emails)
+                        if 'trade' in j:
+                            trade = i[j]
+                            if trade not in trades:
+                                trades.append(trade)
+                        tradess = '\n'.join(trades)
+                        if 'social_media' in j:
+                            social_media = i[j]
+                            if social_media not in social_medias:
+                                social_medias.append(social_media)
+                        social_mediass = '\n'.join(social_medias)
+                        if 'address' in j:
+                            address = i[j]
+                            if address not in addresses:
+                                addresses.append(address)
+                        addressess = '\n'.join(addresses)
+                        if 'technical_data' in j:
+                            technical_data = i[j]
+                            if technical_data not in technicals_data:
+                                technicals_data.append(technical_data)
+                        technicals_datas = '\n'.join(technicals_data)
+            tg_data = []
+            tg_data.append([phonenumbers, telegram_ids, firstnames, emails, addresses,trades, social_medias, technicals_datas])
+            data = f"""
+        PhoneNumber: {phonenumbers}
+        Telegram: {telegram_ids}
+        surname: {surnames}
+        firstname: {firstnames}
+        email: {emails}
+        address: {addresses}
+        trade: {trades}
+        social_media: {social_medias}
+        techincal_data: {technicals_data}
+            """
+            popup('Telegram INFO', [
+    put_html(f'<h3>Telegram ID:{telegram_ids}</h3>'),
+    put_table(tg_data, header=['PhoneNumber', 'Telegram', 'Firstname','Email', 'Address',
+    'Trades','Social_media','Technicals Data'])
+])
+
 def remove_emojis(data):
     
     emoj = re.compile("["
@@ -745,10 +854,9 @@ def remove_emojis(data):
     return str(data).replace("[","").replace("]","").replace("'","").replace("  ","").replace(",","")
 
 def clear_user(user):
-    spec_chars = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_+=№%༺༺\༺/༺•'
-    user = str(user).replace(" ","").replace('"','').replace(".","").replace("꧁","").replace(spec_chars, "")
+    # Убираем спецсимволы, эмодзи и очищаем текст
+    user = str(user).replace(" ", "").replace('"', '').replace(".", "").replace("꧁", "")
     user = remove_chars_from_text(user)
     user = remove_emojis(user)
     
-    #user = re.sub(r'[\x00-\x7f]', ' ', user)
-    return str(user).replace("[","").replace("]","").replace("'","")
+    return user.strip()  # Удаляем пробелы в начале и конце строки

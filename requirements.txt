@@ -5,3 +5,7 @@ networkx
 matplotlib
 emoji
 wordcloud
+phonenumbers
+validate_email
+pandas
+vaderSentiment

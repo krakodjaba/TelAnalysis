@@ -21,210 +21,194 @@ config(theme='dark',title="TelAnalysis", description="Analysing Telegram CHATS-C
 
 
 def generator(filename):
+    import collections  # Импортируем здесь, если используется в функции
+    import networkx as nx
+    import matplotlib.pyplot as plt
+
     tables = []
     clear_console()
     filename = filename.split(".")[0]
     filename = filename.split("/")[1]
-    dates_list = list()
+    dates_list = []
     names = []
-    open(f'asset/edges_{filename}.csv','w', encoding='utf-8').write("")
-    open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write("source,target,label")
+    
+    open(f'asset/edges_{filename}.csv', 'w', encoding='utf-8').write("source,target,label")
+    
     with open(f'asset/{filename}.json', 'r', encoding='utf-8') as f:
         jsondata = json.load(f)
         group_name = jmespath.search('name', jsondata)
         put_html(f"<center><h1>{group_name}</h1><center>")
-        sf = jmespath.search('messages[*]',jsondata)
-        toast(content='Wait Result..',duration=0)
-        for i in sf:
-            fromm = jmespath.search('from', i)
+        sf = jmespath.search('messages[*]', jsondata)
+        toast(content='Wait Result..', duration=0)
+        
+        for message in sf:
+            fromm = jmespath.search('from', message)
             if fromm is None:
                 continue
-            from_id = jmespath.search('from_id',i)
-            date = jmespath.search('date', i)
+            from_id = jmespath.search('from_id', message)
+            date = jmespath.search('date', message)
             dates_list.append(date)
-            if from_id == 'source' or from_id == 'target' or from_id == 'target' or 'None' in from_id:
+            
+            if from_id in ['source', 'target', None]:
                 continue
-            else:
-
-                name_id = f'{fromm}, {from_id}'
-                names.append(name_id)  
-                message = jmespath.search('text',i)
-                if str(type(message)) == "<class 'list'>":
-                    for textt in message:
-                        try:
-                            test = textt['text']
-                            test = test.replace("\\n","").replace("\n","").strip()
-                            try:
-                                message = remove_emojis(test)
-                            except:
-                                message = test
-                        except Exception as ex:
-                            error = f"Error: {ex}"
-                            continue
-                else:
+            
+            name_id = f'{fromm}, {from_id}'
+            names.append(name_id)
+            
+            text_message = jmespath.search('text', message)
+            if isinstance(text_message, list):
+                for textt in message:
                     try:
-                        message = remove_emojis(message)
-                    except:
-                        message = message
-                if message == "":
-                    continue
-                else:
-                    reply_to_message_id = jmespath.search('reply_to_message_id',i)
-                    if reply_to_message_id is not None:
-                        for i in sf:
-                            message_id = jmespath.search('id', i)
-                            if reply_to_message_id == message_id:
-                                reply_to = jmespath.search('from', i)
-                                reply_to_id = jmespath.search('from_id',i)
-                                name_id = f'{reply_to}, {reply_to_id}'
-                                names.append(name_id)
-                                try:
-                                    open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{reply_to_id},{fromm}-{reply_to}')   
-                                except Exception as ex:
-                                    print(ex)
-                                    pass
-                               
-                    else:
+                        if isinstance(textt, dict) and 'text' in textt:  # Проверяем, что textt - словарь, и у него есть ключ 'text'
+                            test = textt['text']
+                        elif isinstance(textt, str):  # Если это строка, обрабатываем ее как есть
+                            test = textt
+                        else:
+                            continue
+
+                        test = test.replace("\\n", "").replace("\n", "").strip()
                         try:
-                            open(f'asset/edges_{filename}.csv','a', encoding='utf-8').write(f'\n{from_id},{from_id},{fromm}')  
+                            message_clean = remove_emojis(test)
+                        except:
+                            message_clean = test
+                    except Exception as ex:
+                        print(f"Error: {ex}")
+                        continue
+
+            else:
+                try:
+                    message_clean = remove_emojis(text_message)
+                except:
+                    message_clean = text_message
+
+            if not message_clean:
+                continue
+            
+            reply_to_message_id = jmespath.search('reply_to_message_id', message)
+            if reply_to_message_id:
+                for reply_message in sf:
+                    message_id = jmespath.search('id', reply_message)
+                    if reply_to_message_id == message_id:
+                        reply_to = jmespath.search('from', reply_message)
+                        reply_to_id = jmespath.search('from_id', reply_message)
+                        reply_name_id = f'{reply_to}, {reply_to_id}'
+                        names.append(reply_name_id)
+                        try:
+                            open(f'asset/edges_{filename}.csv', 'a', encoding='utf-8').write(f'\n{from_id},{reply_to_id},{fromm}-{reply_to}')
                         except Exception as ex:
                             print(ex)
                             pass
-        open(f'asset/nodes_{filename}.csv','w', encoding='utf-8').write("")
-        with open(f'asset/nodes_{filename}.csv','a', encoding='utf-8') as odin:
-            odin.write('id,label,weight')
+            else:
+                try:
+                    open(f'asset/edges_{filename}.csv', 'a', encoding='utf-8').write(f'\n{from_id},{from_id},{fromm}')
+                except Exception as ex:
+                    print(ex)
+                    pass
+        
+        # Создаем nodes.csv
+        open(f'asset/nodes_{filename}.csv', 'w', encoding='utf-8').write("id,label,weight")
+        with open(f'asset/nodes_{filename}.csv', 'a', encoding='utf-8') as odin:
+            #odin.write('id,label,weight')
             c = collections.Counter(names)
             users_table = []
             for i in c:
                 id_stroka = i.split(',')[1]
-                if id_stroka == 'id' or id_stroka == 'label' or id_stroka == 'weight' or 'None' in id_stroka:
+                if id_stroka in ['id', 'label', 'weight', 'None']:
                     continue
-                else:    
-                    name_stroka = i.split(',')[0]
-                    weight = c[i]
-                    users_table.append([id_stroka.replace("user",""), name_stroka, weight])
-                    odin.write(f'\n{id_stroka},{name_stroka},{weight}')
+                
+                name_stroka = i.split(',')[0]
+                weight = c[i]
+                users_table.append([id_stroka.replace("user", ""), name_stroka, weight])
+                odin.write(f'\n{id_stroka},{name_stroka},{weight}')
         
-    put_table(users_table, header=['USER ID','USERNAME','COUNT'])
+        # Вывод таблицы пользователей
+        put_table(users_table, header=['USER ID', 'USERNAME', 'COUNT'])
     
+    # Визуализация графа
     try:
-        G=nx.DiGraph()
-        with open(f'asset/nodes_{filename}.csv','r') as nodes:
-            for node in nodes:
-                if 'source,target,label' in node or 'None' in node:
-                    continue
-                else:
-                    node = node.replace("\n","")
-                    nn_nodes = []
-                    node = node.split(",")
-                    ids = node[0]
-                    label = node[1]
-                    if 'source' in label or 'target' in label or 'label' in label:
-                        continue
+        G = nx.DiGraph()  # Создание графа
 
-                    else:
-                        weight = node[2]
-                        weight = int(weight)
-                        if weight <=10:
-                            color = 'yellow'
-                        elif weight >= 10 and weight <= 100:
-                            color = 'green'
-                        elif weight >= 100 and weight <= 500:
-                            color = 'blue'
-                        elif weight >= 500:
-                            color = 'red'
-                        if label not in nn_nodes:
-                            nn_nodes.append(label)
-                            G.add_node(label, weight=weight, node_size=weight*8, node_color=color,rescale_layout=2)
-        
-        labels = {n: f"{n} - {G.nodes[n]['weight']}" for n in G.nodes}
-        colors = [G.nodes[n]['weight'] for n in G.nodes]
-        sizes = [G.nodes[n]['weight']*2 for n in G.nodes]
-        with open(f'asset/edges_{filename}.csv','r') as edges:
-            nn_edges = []
+        # Чтение узлов
+        with open(f'asset/nodes_{filename}.csv', 'r') as nodes:
+            for node in nodes:
+                # Игнорируем строки заголовков и пустые строки
+                if 'id,label,weight' in node or 'None' in node or node.strip() == "":
+                    continue
+                
+                node = node.strip().split(',')
+                # Проверяем, что узел имеет правильное количество элементов
+                if len(node) != 3:
+                    print(f"Skipping malformed node: {node}")
+                    continue
+
+                ids = node[0]
+                label = node[1]
+
+                # Проверяем вес
+                try:
+                    weight = int(node[2])  # Преобразуем weight в int
+                    if weight < 0:
+                        print(f"Weight must be non-negative for node {label}. Skipping...")
+                        continue
+                except ValueError:
+                    print(f"Invalid weight value: {node[2]} for node {label}. Skipping...")
+                    continue
+                
+                # Добавляем узел в граф
+                G.add_node(label, weight=weight)
+                print(f"Added node: {label} with weight: {weight}")
+
+        # Чтение рёбер
+        with open(f'asset/edges_{filename}.csv', 'r') as edges:
             for edge in edges:
                 if 'source,target,label' in edge or 'None' in edge:
                     continue
-                else:
-                    if edge not in nn_edges:
-                        nn_edges.append(edge)
-                        edge = edge.split(",")
-                        source = edge[0]
-                        target = edge[1]
-                        try:
-                            label_from = str(edge[2]).split("-")[0]
-                            label_from = str(label_from).replace("\n","")
-                        except:
-                            label_from = ''
-                        try:
-                            label_to = str(edge[2]).split("-")[1]
-                            label_to = str(label_to).replace("\n","")
-                        except:
-                            label_to = ''
-                        if label_from == label_to or label_from == '' or label_to == '':
-                            continue
-                        else:
-                            if f'{label_from} {label_to}' not in nn_edges:
-                                nn_edges.append(f'{label_from} {label_to}')
-                                G.add_edge(label_from,label_to, weight=1.3)
-                            else:
-                                continue
-                    else:
-                        continue
-    except Exception as ex:
-        print(ex)
-        pass
+                source, target, label = edge.strip().split(',')
+                G.add_edge(source, target, weight=1.3)
 
-    firstmes = str(dates_list[:1]).replace("[","").replace("]","").replace("'","").replace("T"," ")
-    lastmes = str(dates_list[-1:]).replace("[","").replace("]","").replace("'","").replace("T"," ")
-    firstmess = []
-    lastmess = []
-    lastmess.append(lastmes)
-    firstmess.append(firstmes)
-    put_table([firstmess], header=['First Message'])
-    put_table([lastmess], header=['Last Message'])
+        # Визуализация графа
+        labels = {n: f"{n} - {G.nodes[n]['weight']}" for n in G.nodes if 'weight' in G.nodes[n]}  # Убедитесь, что weight существует
+        colors = [G.nodes[n]['weight'] for n in G.nodes if 'weight' in G.nodes[n]]  # Проверяем наличие weight
+        sizes = [G.nodes[n]['weight'] * 2 for n in G.nodes if 'weight' in G.nodes[n]]  # Проверяем наличие weight
+
+        pos = nx.circular_layout(G)  # Определяем расположение узлов
+        nx.draw(G, pos, with_labels=True, labels=labels, font_weight='bold', node_size=sizes, node_color=colors)
+
+        plt.savefig(f'asset/{filename}.png', bbox_inches='tight')  # Сохраняем граф в файл
+        plt.close()  # Закрываем график
+    except Exception as ex:
+        print(f"Error generating graph: {ex}")
+
+
     
-    try:
-        try:
-            pos = nx.circular_layout(G)
-        except:
-            put_text("error #14")
-        try:
-
-            nx.draw(G,pos, with_labels=True,labels=labels,font_weight='bold', node_size=sizes, node_color=colors)
-            try:
-                plt.savefig(f'asset/{filename}.png', bbox_inches='tight')
-                img = open(f'asset/{filename}.png','rb').read()
-            except Exception as ex:
-                print(ex)
-                es = " error #16"
-                put_text(es)
-            try:
-                put_image(img, width='600px')
-            except Exception as ex:
-                put_text(f"Error: {ex}")
-        except Exception as ex:
-            put_html(f"error #15 {ex}<br>Perhaps the chat is too large, the preliminary graph could not be generated.<br>Try to make graph in Gephi with below files.")
-    except Exception as ex:
-        put_text(f"Error in generating image.:{ex}")
-    put_text("Files:")
+    # Вывод даты первого и последнего сообщения
+    firstmes = dates_list[0].replace("T", " ")
+    lastmes = dates_list[-1].replace("T", " ")
+    put_table([[firstmes]], header=['First Message'])
+    put_table([[lastmes]], header=['Last Message'])
+    
+    # Отправка файлов
     try:
         nodes_content = open(f'asset/nodes_{filename}.csv', 'rb').read()
-        put_file(f'asset/nodes_{filename}.csv',label='Nodes',content=nodes_content)
+        put_file(f'nodes_{filename}.csv', label='Nodes', content=nodes_content)
     except Exception as ex:
-        put_text(f"error: {ex}")
+        put_text(f"Error: {ex}")
+    
     try:
         edges_content = open(f'asset/edges_{filename}.csv', 'rb').read()
-        put_file(f'asset/edges_{filename}.csv',label='Edges', content=edges_content)
+        put_file(f'edges_{filename}.csv', label='Edges', content=edges_content)
     except Exception as ex:
-        put_text(f"error: {ex}")
+        put_text(f"Error: {ex}")
+    
     try:
-        Graph_content = open(f'asset/{filename}.png', 'rb').read()
-        put_file(f'asset/{filename}.png',label='Graph', content=Graph_content)
+        graph_content = open(f'asset/{filename}.png', 'rb').read()
+        put_file(f'{filename}.png', label='Graph', content=graph_content)
     except Exception as ex:
-        pass
-    put_button("clear",onclick=lambda: run_js('window.location.reload()'))
-    put_button("Scroll Up",onclick=lambda: run_js('window.scrollTo(document.body.scrollHeight, 0)'))
+        put_text(f"Error: {ex}")
+    
+    put_button("clear", onclick=lambda: run_js('window.location.reload()'))
+    put_button("Scroll Up", onclick=lambda: run_js('window.scrollTo(document.body.scrollHeight, 0)'))
+
 
 
 def start_gen():
@@ -235,6 +219,7 @@ def start_gen():
     put_html("<h1><center>Graph of Telegram Chat<center></h1><br>")
     f = file("Select a file:", accept='.json')
     open('asset/'+f['filename'], 'wb').write(f['content'])
+    print(f['filename'])
     generator(f"asset/{f['filename']}")
     
 

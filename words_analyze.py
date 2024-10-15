@@ -167,7 +167,7 @@ with ThreadPoolExecutor() as executor:
         try:
             future.result()  # Проверка завершения каждого потока
         except Exception as e:
-            #print(f"Error processing message: {e}")
+            print(f"Error processing message: {e}")
 
 # Теперь отображаем в нужном формате user - user_from
 for user, da in users.items():

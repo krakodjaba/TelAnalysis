@@ -6,14 +6,15 @@ import json, re, jmespath
 from validate_email import validate_email
 import phonenumbers
 import pandas as pd
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 # Глобальные переменные
 emails, phoness, all_tokens, users = [], [], [], {}
 count_messages = 0
 
-
+# Карта действий для различных типов сообщений
 action_map = {
     'invite_members': 'Invite Member',
     'remove_members': 'Kicked Members',
@@ -22,8 +23,10 @@ action_map = {
     # Добавьте другие действия по необходимости
 }
 
-action_reverse   = ['Invite Member','Kicked Members','Joined by Link', 'Pinned Message']
+# Карта для обратного преобразования действий
+action_reverse = ['Invite Member', 'Kicked Members', 'Joined by Link', 'Pinned Message']
 
+# Инициализация анализатора тональности
 analyzer = SentimentIntensityAnalyzer()
 
 # Конфигурация интерфейса
@@ -40,19 +43,20 @@ output.put_button("Search ID", onclick=lambda: session.run_js(f'window.find({pin
 # Открытие файла и загрузка данных
 filename = sys.argv[1].split(".")[0].split("/")[1]
 
-with open(f'asset/{filename}.json', 'r', encoding='utf-8') as datas:
+# Убедимся, что файл открыт с корректной кодировкой
+with open(f'asset/{filename}.json', 'r', encoding='utf-8', errors='replace') as datas:
     data = json.load(datas)
 
 sf = jmespath.search('messages[*]', data)
 group_name = jmespath.search('name', data)
 
+# Функция для анализа тональности
 def analyze_sentiment(text):
     try:
         score = analyzer.polarity_scores(str(text))
         return float(score['compound'])  # Приводим к float для уверенности
     except:
         return float(0.0)
-
 
 # Функция для извлечения email и телефонных номеров из текста
 def extract_emails_and_phone_numbers(text):
@@ -72,30 +76,42 @@ def extract_emails_and_phone_numbers(text):
             pass       
     return emails_list, phones_list
 
+# Функция для извлечения текста из сообщения с улучшенной обработкой вложенных структур
 def extract_text_from_message(message):
-    texts = set()  # Используем множество, чтобы избежать дубликатов
-    
+    texts = set()  # Используем множество для уникальных значений текста
+
     if isinstance(message, dict):
-        text = jmespath.search('text', message)
-        if isinstance(text, str) and text.strip():
-            texts.add(text)
-
-        elif isinstance(text, list):
-            for item in text:
-                if isinstance(item, dict):
-                    item = jmespath.search('text', item)
-                    if item:
+        # Извлекаем все возможные поля с текстом напрямую
+        if 'text' in message:
+            if isinstance(message['text'], str) and message['text'].strip():
+                texts.add(message['text'])
+            elif isinstance(message['text'], list):  # Если "text" - это список
+                for item in message['text']:
+                    if isinstance(item, str):
                         texts.add(item)
-                elif isinstance(item, str):
-                    texts.add(item)
-
+        
+        # Извлечение текста из других полей, таких как caption для медиа
+        if 'caption' in message:
+            if isinstance(message['caption'], str) and message['caption'].strip():
+                texts.add(message['caption'])
+        
+        # Ищем текстовые сущности в text_entities
         entities = jmespath.search('text_entities[*].text', message)
         if entities:
             for entity in entities:
                 texts.add(entity)
 
-        for value in message.values():
-            texts.update(extract_text_from_message(value))
+        # Обрабатываем вложенные структуры: пересланные и ответы на сообщения
+        if 'forwarded_from' in message:
+            texts.update(extract_text_from_message(message['forwarded_from']))
+
+        if 'reply_to_message' in message:
+            texts.update(extract_text_from_message(message['reply_to_message']))
+
+        # Рекурсивно обрабатываем вложенные структуры
+        for key, value in message.items():
+            if isinstance(value, (list, dict)):
+                texts.update(extract_text_from_message(value))
 
     elif isinstance(message, list):
         for item in message:
@@ -124,11 +140,9 @@ def process_message(message):
                 if action in ['invite_members', 'remove_members']:
                     members = jmespath.search('members', message)
                     members = ",".join(str(x) for x in members if x)
-                    users[user].append((f"{action_text} - {members}",0.0))
-                elif action == 'pin_message':
-                    users[user].append((f"{action_text} - {tex}",0.0))
+                    users[user].append((f"{action_text} - {members}", 0.0))
                 else:
-                    users[user].append((f"{action_text} {tex}",0.0))
+                    users[user].append((f"{action_text} {tex}", 0.0))
                 return
 
     user = user.replace(" ", "")
@@ -139,7 +153,6 @@ def process_message(message):
     unique_texts = extract_text_from_message(message)
     for clean_text in unique_texts:
         if clean_text:
-            #users[user].append(clean_text)
             sentiment_score = analyze_sentiment(clean_text)
             users[user].append((clean_text, sentiment_score))  # Сохраняем текст и балл
             # Извлечение email и телефонных номеров
@@ -149,11 +162,15 @@ def process_message(message):
 
 # Обработка сообщений с использованием потоковой обработки
 with ThreadPoolExecutor() as executor:
-    executor.map(process_message, sf)
+    future_to_message = {executor.submit(process_message, msg): msg for msg in sf}
+    for future in as_completed(future_to_message):  # Используем as_completed правильно
+        try:
+            future.result()  # Проверка завершения каждого потока
+        except Exception as e:
+            #print(f"Error processing message: {e}")
 
 # Теперь отображаем в нужном формате user - user_from
 for user, da in users.items():
-    #print(da)
     user_from = ""
     messages = jmespath.search(f"messages[*]", data)
     
@@ -167,17 +184,8 @@ for user, da in users.items():
     else:
         user_display = user
         
-        
     # Извлечение оценок чувствительности
-    user_sentiment_scores = []
-    for x in da:
-        try:
-            score = float(x[1])  # Приводим к float
-            user_sentiment_scores.append(score)
-        except (ValueError, TypeError):
-            # Игнорируем элементы, которые не могут быть преобразованы в float
-            #print(f"Invalid sentiment score: {x}")
-            continue
+    user_sentiment_scores = [float(x[1]) for x in da if isinstance(x[1], float)]
     average_user_sentiment = sum(user_sentiment_scores) / len(user_sentiment_scores) if user_sentiment_scores else 0
     
     try:
@@ -186,6 +194,7 @@ for user, da in users.items():
 
         gemy = [[x, y] for x, y in genuy]
         gery = [[x[0]] for x in da]
+        #print(len(all_tokens))
         all_tokens.extend(tokens)
 
         if gery or gemy:
@@ -199,19 +208,29 @@ for user, da in users.items():
     except Exception as ex:
         print(f"[{user}] error: {ex}")
 
-
-
 # Общий анализ всех сообщений
 most_com = read_conf('most_com')
-all_tokens, data = nltk_analyse.analyse_all(all_tokens, most_com)
-all_chat = [[i[0], i[1]] for i in all_tokens]
-output.put_collapse(f'TOP words of {group_name}', [
-    output.put_table(all_chat, header=['word']),
-], open=False)
 
-all_sentiment_scores = [analyze_sentiment(msg) for msg in all_tokens]
-average_chat_sentiment = sum(all_sentiment_scores) / len(all_sentiment_scores) if all_sentiment_scores else 0
-output.put_text(f'Average Sentiment for {group_name}: {average_chat_sentiment:.2f}')
+# Проверяем, что функция nltk_analyse.analyse_all возвращает правильные данные
+try:
+    all_tokens, data = nltk_analyse.analyse_all(all_tokens, most_com)
+except Exception as e:
+    print(f"Error in analyse_all: {e}")
+
+# Проверим, что all_tokens не пустой
+if all_tokens:
+    all_chat = [[i[0], i[1]] for i in all_tokens]
+    output.put_collapse(f'TOP words of {group_name}', [
+        output.put_table(all_chat, header=['word']),
+    ], open=False)
+
+    # Общий анализ тональности чата
+    all_sentiment_scores = [analyze_sentiment(msg[0]) for msg in all_tokens]  # Извлекаем текст для анализа
+    average_chat_sentiment = sum(all_sentiment_scores) / len(all_sentiment_scores) if all_sentiment_scores else 0
+    output.put_text(f'Average Sentiment for {group_name}: {average_chat_sentiment:.2f}')
+else:
+    #print("No tokens found for analysis.")
+    output.put_text(f"No tokens found for {group_name}. Sentiment analysis is unavailable.")
 
 
 # Обработка email и телефонов

@@ -71,7 +71,7 @@ def analyse_all(data, most_com):
     text = str(data).lower().replace("'", "").replace(",", "").replace("[", "").replace("]", "").replace("-", " ")
     text = remove_chars_from_text(text, spec_chars)
     text = remove_chars_from_text(text, string.digits)
-    text = remove_emojis(text)
+    #text = remove_emojis(text)
 
     if len(text) >= 1:
         text_tokens = word_tokenize(text)

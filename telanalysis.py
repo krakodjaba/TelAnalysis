@@ -11,7 +11,8 @@ import nltk_analyse, channel_analyse
 import networkx as nx
 import matplotlib.pyplot as plt
 import sys
-
+import matplotlib
+matplotlib.use('Agg')
 
 global select_type_stem
 
@@ -129,32 +130,26 @@ def generator(filename):
         G = nx.DiGraph()  # Создание графа
 
         # Чтение узлов
-        with open(f'asset/nodes_{filename}.csv', 'r') as nodes:
+        with open(f'asset/nodes_{filename}.csv', 'r', encoding='utf-8') as nodes:
             for node in nodes:
-                # Игнорируем строки заголовков и пустые строки
-                if 'id,label,weight' in node or 'None' in node or node.strip() == "":
-                    continue
+                node = node.strip()
+                if node == "" or node.startswith("id,label,weight"):
+                    continue  # Пропускаем заголовок и пустые строки
                 
-                node = node.strip().split(',')
-                # Проверяем, что узел имеет правильное количество элементов
-                if len(node) != 3:
-                    print(f"Skipping malformed node: {node}")
+                parts = node.split(',')
+                if len(parts) != 3:
+                    print(f"Skipping malformed node line: {node}")
                     continue
 
-                ids = node[0]
-                label = node[1]
-
-                # Проверяем вес
+                ids, label, weight = parts
                 try:
-                    weight = int(node[2])  # Преобразуем weight в int
+                    weight = float(weight)  # Преобразуем в float
                     if weight < 0:
-                        print(f"Weight must be non-negative for node {label}. Skipping...")
-                        continue
+                        weight = 1
                 except ValueError:
-                    print(f"Invalid weight value: {node[2]} for node {label}. Skipping...")
+                    print(f"Invalid weight value: {weight} for node {label}. Skipping...")
                     continue
-                
-                # Добавляем узел в граф
+
                 G.add_node(label, weight=weight)
                 print(f"Added node: {label} with weight: {weight}")
 
@@ -167,12 +162,35 @@ def generator(filename):
                 G.add_edge(source, target, weight=1.3)
 
         # Визуализация графа
-        labels = {n: f"{n} - {G.nodes[n]['weight']}" for n in G.nodes if 'weight' in G.nodes[n]}  # Убедитесь, что weight существует
-        colors = [G.nodes[n]['weight'] for n in G.nodes if 'weight' in G.nodes[n]]  # Проверяем наличие weight
-        sizes = [G.nodes[n]['weight'] * 2 for n in G.nodes if 'weight' in G.nodes[n]]  # Проверяем наличие weight
+        sizes = []
+        colors = []
+        labels = {}
+
+        for n in G.nodes:
+            weight = G.nodes[n].get('weight', 1)  # По умолчанию 1, если нет weight
+            
+            if isinstance(weight, (int, float)) and weight >= 0:  # Проверяем, что число неотрицательное
+                min_size = 50  # Минимальный размер узла
+                scale_factor = 10  # Коэффициент масштабирования
+
+                sizes.append(max(min_size, weight * scale_factor))
+
+                colors.append(weight)
+                labels[n] = f"{n} - {weight}"  # Добавляем в labels только корректные узлы
+            else:
+                print(f"Invalid weight for node {n}: {weight} (type: {type(weight)})")
+
 
         pos = nx.circular_layout(G)  # Определяем расположение узлов
-        nx.draw(G, pos, with_labels=True, labels=labels, font_weight='bold', node_size=sizes, node_color=colors)
+        nx.draw(
+            G, pos, 
+            with_labels=True, 
+            labels=labels, 
+            font_weight='bold', 
+            node_size=sizes if sizes else 300,  # Значение по умолчанию
+            node_color=colors if colors else "blue",  # Значение по умолчанию
+            cmap=plt.cm.Blues  # Цветовая карта
+        )
 
         plt.savefig(f'asset/{filename}.png', bbox_inches='tight')  # Сохраняем граф в файл
         plt.close()  # Закрываем график
@@ -233,7 +251,7 @@ def start_two():
     open('asset/'+f['filename'], 'wb').write(f['content'])
     filename = 'asset/'+f['filename']
     import os
-    os.system(f'python3 words_analyze.py {filename}')
+    os.system(f'python words_analyze.py {filename}')
     
 def start_three():
     clear_console()
@@ -319,6 +337,7 @@ def starting():
         import nltk
         nltk.download('stopwords')
         nltk.download('punkt')
+
         clear_console()
         try:
             import os

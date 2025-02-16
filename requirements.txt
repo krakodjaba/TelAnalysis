@@ -9,3 +9,6 @@ phonenumbers
 validate_email
 pandas
 vaderSentiment
+PyQt6
+PyQt6-Qt6
+PyQt6-sip

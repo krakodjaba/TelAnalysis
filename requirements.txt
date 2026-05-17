@@ -1,6 +1,6 @@
 fastapi==0.99.0
 uvicorn[standard]==0.22.0
-Jinja2==3.1.2
+Jinja2==3.1.6
 aiofiles==23.1.0
 wordcloud==1.9.4
 nltk==3.8.1

@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Результат анализа</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/modal.js"></script>
+</head>
+<body>
+        <a href="/" class="btn">Новый анализ</a>
+  <div class="container">
+    <h1>Результат анализа</h1>
+    {% if result.error %}
+      <p>{{ result.error }}</p>
+      <a href="/" class="btn">Вернуться</a>
+    {% else %}
+      {% if result.name_channel %}<h2>{{ result.name_channel }}</h2>{% elif result.group_name %}<h2>{{ result.group_name }}</h2>{% endif %}
+
+      {% if result.wordcloud_path %}
+        <h3>Облако слов</h3>
+        <img src="/{{ result.wordcloud_path }}" alt="wordcloud" style="max-width:100%;height:auto;">
+      {% endif %}
+
+      {% if result.top_words %}
+        <h3>Top Words</h3>
+        <table>
+          <tr><th>Word</th><th>Count</th></tr>
+          {% for w in result.top_words %}
+            <tr><td>{{ w[0] }}</td><td>{{ w[1] }}</td></tr>
+          {% endfor %}
+        </table>
+      {% endif %}
+
+      {% if result.users %}
+        <h3>Users</h3>
+        {% for uid, u in result.users.items() %}
+          <details>
+            <summary>{{ u.display }} — avg sentiment: {{ "%.2f"|format(u.avg_sentiment) }}</summary>
+            <h4>Top words</h4>
+            <table>
+              <tr><th>Word</th><th>Count</th></tr>
+              {% for w in u.top_words %}
+                <tr><td>{{ w[0] }}</td><td>{{ w[1] }}</td></tr>
+              {% endfor %}
+            </table>
+          </details>
+        {% endfor %}
+      {% endif %}
+      <br>
+
+    {% endif %}
+  </div>
+
+  <!-- Modal -->
+  <div id="donateModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Понравился результат? Поддержите проект</h3>
+      <p>Скиньте донат на кофе — сколько не жалко ☕</p>
+      <div class="donate-actions">
+        <a href="https://www.buymeacoffee.com/yourpage" target="_blank" class="btn">Buy me a coffee</a>
+        <button id="modalClose" class="btn">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function(){
+      // показываем модалку через 700ms после отображения результата
+      setTimeout(()=>{ showDonateModal(); }, 700);
+    });
+  </script>
+</body>
+</html>

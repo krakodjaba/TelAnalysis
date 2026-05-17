@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Telanalysis — Загрузка</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Telanalysis</h1>
+    <p>Загрузите Telegram JSON файл (chat или channel)</p>
+
+    <form action="/analyze/chat" method="post" enctype="multipart/form-data">
+      <label>Анализ чата (.json):</label><br>
+      <input type="file" name="file" accept=".json" required>
+      <button type="submit">Проанализировать чат</button>
+    </form>
+
+    <hr>
+
+    <form action="/analyze/channel" method="post" enctype="multipart/form-data">
+      <label>Анализ канала (.json):</label><br>
+      <input type="file" name="file" accept=".json" required>
+      <button type="submit">Проанализировать канал</button>
+    </form>
+  </div>
+
+</body>
+</html>

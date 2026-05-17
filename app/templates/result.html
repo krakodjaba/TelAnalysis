@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Результат анализа</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="/static/js/modal.js"></script>
+  <style>
+    #d3graph {
+      width: 100%;
+      height: 600px;
+      border: 1px solid #444;
+      margin-top: 20px;
+      background-color: #0b1220; /* темный фон */
+    }
+    text {
+      fill: white;
+      font-family: Arial, sans-serif;
+    }
+    line {
+      stroke: #888;
+      stroke-opacity: 0.6;
+    }
+    circle {
+      stroke: #fff;
+      stroke-width: 1px;
+    }
+  </style>
+</head>
+<body>
+<a href="/" class="btn">Новый анализ</a>
+<div class="container">
+  <h1>Результат анализа</h1>
+
+  {% if result.error %}
+    <p>{{ result.error }}</p>
+    <a href="/" class="btn">Вернуться</a>
+  {% else %}
+    {% if result.name_channel %}
+      <h2>{{ result.name_channel }}</h2>
+    {% elif result.group_name %}
+      <h2>{{ result.group_name }}</h2>
+    {% endif %}
+
+    {% if result.wordcloud_path %}
+      <h3>Облако слов</h3>
+      <img src="/{{ result.wordcloud_path }}" alt="wordcloud" style="max-width:100%;height:auto;">
+    {% endif %}
+
+    {% if result.top_words %}
+      <h3>Top Words</h3>
+      <table>
+        <tr><th>Word</th></tr>
+        {% for w in result.top_words %}
+          <tr><td>{{ w }}</td></tr>
+        {% endfor %}
+      </table>
+    {% endif %}
+
+    {% if result.users %}
+      <h3>Users</h3>
+      {% for uid, u in result.users.items() %}
+        <details>
+          <summary>{{ u.display }} — avg sentiment: {{ "%.2f"|format(u.avg_sentiment) }}</summary>
+          <h4>Top words</h4>
+          <table>
+            <tr><th>Word</th><th>Count</th></tr>
+            {% for w in u.top_words %}
+              <tr><td>{{ w[0] }}</td><td>{{ w[1] }}</td></tr>
+            {% endfor %}
+          </table>
+        </details>
+      {% endfor %}
+    {% endif %}
+
+    
+
+  {% endif %}
+</div>
+{% if result.graph_json %}
+      <h3>Интерактивный граф</h3>
+      <div id="d3graph"></div>
+      <script>
+        d3.json("{{ result.graph_json }}").then(data => {
+            const container = document.getElementById('d3graph');
+            const width = container.clientWidth;
+            const height = 600;
+
+            const svg = d3.select("#d3graph")
+                .append("svg")
+                .attr("width", width)
+                .attr("height", height);
+
+            const simulation = d3.forceSimulation(data.nodes)
+                .force("link", d3.forceLink(data.links).id(d => d.id).distance(150))
+                .force("charge", d3.forceManyBody().strength(-500))
+                .force("center", d3.forceCenter(width/2, height/2));
+
+            const link = svg.append("g")
+                .attr("stroke", "#888")
+                .attr("stroke-opacity", 0.6)
+                .selectAll("line")
+                .data(data.links)
+                .join("line")
+                .attr("stroke-width", 1.5);
+
+            const node = svg.append("g")
+                .selectAll("circle")
+                .data(data.nodes)
+                .join("circle")
+                .attr("r", d => Math.sqrt(d.weight) * 5)
+                .attr("fill", "#2563eb")
+                .call(d3.drag()
+                    .on("start", dragstarted)
+                    .on("drag", dragged)
+                    .on("end", dragended));
+
+            const label = svg.append("g")
+                .selectAll("text")
+                .data(data.nodes)
+                .join("text")
+                .text(d => d.label)
+                .attr("font-size", 12)
+                .attr("dx", 6)
+                .attr("dy", 3);
+
+            simulation.on("tick", () => {
+                link
+                  .attr("x1", d => d.source.x)
+                  .attr("y1", d => d.source.y)
+                  .attr("x2", d => d.target.x)
+                  .attr("y2", d => d.target.y);
+
+                node
+                  .attr("cx", d => d.x)
+                  .attr("cy", d => d.y);
+
+                label
+                  .attr("x", d => d.x)
+                  .attr("y", d => d.y);
+            });
+
+            function dragstarted(event, d) {
+                if (!event.active) simulation.alphaTarget(0.3).restart();
+                d.fx = d.x;
+                d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+                d.fx = event.x;
+                d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+                if (!event.active) simulation.alphaTarget(0);
+                d.fx = null;
+                d.fy = null;
+            }
+        });
+      </script>
+    {% endif %}
+<!-- Modal for donate -->
+<div id="donateModal" class="modal hidden">
+  <div class="modal-content">
+    <h3>Понравился результат? Поддержите проект</h3>
+    <p>Скиньте донат на кофе — сколько не жалко ☕</p>
+    <div class="donate-actions">
+      <a href="https://tbank.ru/cf/3r6DZsFmWfD" target="_blank" class="btn">Buy me a coffee</a>
+      <button id="modalClose" class="btn">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function(){
+    setTimeout(()=>{ showDonateModal(); }, 700);
+});
+</script>
+</body>
+</html>

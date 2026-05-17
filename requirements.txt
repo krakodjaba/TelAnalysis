@@ -3,7 +3,7 @@ uvicorn[standard]==0.22.0
 Jinja2==3.1.6
 aiofiles==23.1.0
 wordcloud==1.9.4
-nltk==3.8.1
+nltk==3.9.4
 networkx==3.2
 matplotlib==3.8.0
 emoji==2.2.0

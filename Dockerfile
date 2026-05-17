@@ -10,7 +10,7 @@ WORKDIR /app
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 RUN python -m nltk.downloader -d /usr/local/share/nltk_data stopwords punkt
-
+RUN mkdir -p uploads
 COPY . /app
 
 # создаём непользовательского юзера

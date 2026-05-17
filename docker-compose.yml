@@ -3,7 +3,5 @@ services:
   web:
     build: .
     ports:
-      - "8992:80"
-    volumes:
-      - ./uploads:/app/uploads
+      - "80:80"
     restart: unless-stopped

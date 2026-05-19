@@ -1,383 +1,186 @@
 # Telanalysis
 
-Telegram Social Media Intelligence (SOCMINT / OSINT) framework for analyzing exported Telegram chats and channels.
+Telegram Social Media Intelligence (SOCMINT / OSINT) платформа для анализа экспортированных Telegram чатов и каналов.
 
-Telanalysis is a FastAPI-based analytical platform designed for processing Telegram export archives, extracting metadata, generating communication graphs, identifying entities, analyzing sentiment and building visual intelligence artifacts for OSINT/SOCMINT workflows.
+Telanalysis использует FastAPI для загрузки Telegram JSON-архивов, выполнения NLP и сентимент-анализа, генерации графов взаимодействий, семантического и стилометрического анализа.
 
-The project is focused on:
+## Возможности
 
-- Telegram channel analysis
-- Telegram group/chat analysis
-- Social graph generation
-- Keyword extraction
-- Word frequency analysis
-- Entity extraction (emails / phone numbers)
-- Sentiment analysis
-- Interaction mapping between users
-- Visual SOCMINT analytics
-
----
-
-# Возможности
-
-## Анализ каналов
-
-- Анализ экспортированных Telegram-каналов
-- Построение WordCloud
-- Выделение наиболее частотных слов
-- NLP-обработка сообщений
-- Очистка текста от emoji и системного мусора
-- Поддержка русского и английского языка
-
-## Анализ чатов
-
-- Анализ Telegram-групп и чатов
+- Анализ Telegram каналов и чатов
+- Построение WordCloud из сообщений канала
+- Частотный анализ слов и ключевых фраз
 - Сентимент-анализ сообщений
-- Извлечение email-адресов
-- Извлечение телефонных номеров
-- Выявление пользовательской активности
-- Анализ reply-цепочек
-- Обработка forwarded-сообщений
-- Обнаружение системных действий:
-  - join events
-  - invite events
-  - remove events
-  - pin events
+- Извлечение email-адресов и телефонных номеров
+- Построение графов reply-взаимодействий
+- Экспорт `nodes_*.csv`, `edges_*.csv` и JSON-графа
+- Семантический анализ тем и coherence
+- Стилометрический анализ текста
+- Временной анализ активности
 
-## SOCMINT / Graph Intelligence
+## Поддерживаемые данные
 
-- Генерация social graph
-- Построение связей между пользователями
-- Export nodes/edges в CSV
-- JSON-граф для D3.js визуализации
-- Анализ reply-взаимодействий
-- Визуализация network topology
-
----
-
-# Поддерживаемые данные
-
-Telanalysis работает с JSON-экспортами Telegram.
-
-Экспорт можно получить через:
-
-- Telegram Desktop
-- Export chat history
-- Export group/channel data
+Проект работает с JSON-экспортами Telegram, полученными из Telegram Desktop или других средств экспорта.
 
 Поддерживаются:
 
-- channels
-- supergroups
-- private groups
-- exported chat history
+- каналы
+- супергруппы
+- приватные группы
+- история чатов в JSON
 
----
-
-# Архитектура
+## Архитектура проекта
 
 ```text
-FastAPI
- ├── Routers
- ├── NLP Engine
- ├── Sentiment Analyzer
- ├── Graph Generator
- ├── Static Graph Storage
- └── Jinja2 Frontend
+app/
+  routers/
+    analysis.py      # маршруты загрузки и анализа
+  services/
+    channel_analyse.py
+    chat_analyse.py
+    graph_generator.py
+    semantic_analyse.py
+    stylometric_analyse.py
+    temporal_analyse.py
+    nltk_analyse.py
+    utils.py
+  static/
+  templates/
+graphs/             # сохраняются визуальные артефакты и графы
+uploads/            # загруженные JSON-файлы
+config.json
+requirements.txt
+Dockerfile
+docker-compose.yml
 ```
 
 Используемые технологии:
 
-- Python 3
+- Python 3.11
 - FastAPI
+- Uvicorn
 - Jinja2
-- NetworkX
 - NLTK
 - VaderSentiment
+- NetworkX
 - WordCloud
 - Matplotlib
 - JMESPath
 
----
+## Установка и запуск
 
-# Использование для Social Media Intelligence
+### Локально
 
-## SOCMINT workflow
-
-### 1. Экспорт Telegram-данных
-
-В Telegram Desktop:
-
-```text
-Settings → Advanced → Export Telegram Data
-```
-
-Экспортируйте:
-
-- JSON format
-- messages
-- media metadata
-- user information
-
----
-
-### 2. Загрузка архива
-
-После запуска платформы:
-
-```text
-http://127.0.0.1:80
-```
-
-Загрузите exported JSON.
-
----
-
-### 3. Получение аналитики
-
-Система автоматически:
-
-- обработает сообщения
-- построит NLP-статистику
-- извлечет сущности
-- построит communication graph
-- сгенерирует wordcloud
-- покажет активность участников
-
----
-
-## Примеры применения
-
-### Threat Intelligence
-
-- Анализ Telegram-комьюнити
-- Выявление координации
-- Mapping influence-узлов
-- Detection suspicious interaction patterns
-
-### Investigations
-
-- Анализ групповых коммуникаций
-- Correlation пользователей
-- Mapping reply chains
-- Поиск контактных данных
-
-### Media Monitoring
-
-- Анализ тематик каналов
-- Detection narrative shifts
-- Tracking keyword frequency
-- Sentiment drift analysis
-
-### Community Intelligence
-
-- Mapping core participants
-- Detection high-centrality users
-- Reply topology analysis
-- Communication density analysis
-
----
-
-# Структура проекта
-
-```text
-.
-├── app/
-│   ├── routers/
-│   ├── services/
-│   ├── static/
-│   └── templates/
-├── graphs/
-├── uploads/
-├── config.json
-├── requirements.txt
-├── Dockerfile
-└── docker-compose.yml
-```
-
----
-
-# Установка
-
-# Linux
-
-## Ubuntu / Debian
-
-Установка зависимостей:
-
-```bash
-sudo apt update
-sudo apt install -y python3 python3-pip python3-venv git
-```
-
-Клонирование проекта:
-
-```bash
-git clone <repo_url>
-cd telanalysis
-```
-
-Создание virtualenv:
+1. Создайте виртуальное окружение:
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 ```
 
-Установка Python-зависимостей:
+2. Установите зависимости:
 
 ```bash
-pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Загрузка NLTK-данных:
+3. Загрузите NLTK-данные:
 
 ```bash
-python
+python -m nltk.downloader stopwords punkt
 ```
 
-В Python shell:
-
-```python
-import nltk
-nltk.download('stopwords')
-exit()
-```
-
-Запуск:
+4. Запустите приложение:
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 80
+uvicorn app.main:app --host 0.0.0.0 --port 8000
 ```
 
-Интерфейс:
+5. Откройте в браузере:
 
 ```text
-http://127.0.0.1:80
+http://127.0.0.1:8000
 ```
 
----
+### В Docker
 
-# macOS
+Проект содержит `Dockerfile` и `docker-compose.yml`.
 
-## Установка через Homebrew
-
-Установка Python:
+Запустите:
 
 ```bash
-brew install python
+docker compose up --build
 ```
 
-Клонирование проекта:
+Для фонового режима:
 
 ```bash
-git clone <repo_url>
-cd telanalysis
+docker compose up --build -d
 ```
 
-Создание virtualenv:
+Остановить контейнеры:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
+docker compose down
 ```
 
-Установка зависимостей:
+Том монтирует локальные директории:
 
-```bash
-pip install --upgrade pip
-pip install -r requirements.txt
+- `./graphs` → `/app/graphs`
+- `./uploads` → `/app/uploads`
+- `./config.json` → `/app/config.json`
+
+По умолчанию приложение доступно на `http://127.0.0.1:8000`.
+
+> Если на системе используется старая версия Docker Compose, можно применить `docker-compose up --build`.
+
+## Использование
+
+1. Перейдите на главную страницу.
+2. Загрузите Telegram JSON через форму `Анализ канала` или `Анализ чата`.
+3. Дождитесь обработки и просмотрите результаты.
+4. Сгенерированные артефакты доступны в `graphs/`.
+
+### Основные маршруты
+
+- `/` — главная страница
+- `/analyze/channel` — анализ канала
+- `/analyze/chat` — анализ чата
+
+## Результаты анализа
+
+После загрузки JSON генерируются:
+
+- `wordcloud.png` для канального анализа
+- `nodes_*.csv` и `edges_*.csv` для графовой аналитики
+- `*.json` D3-ready граф
+- семантические темы и ключевые фразы
+- стилометрические метрики
+- временные показатели активности
+- извлечённые email и телефоны
+
+## Конфигурация
+
+Настройки читаются из `config.json`.
+
+Пример:
+
+```json
+{
+  "select_type_stem": "Off",
+  "most_com": 30,
+  "most_com_channel": 100
+}
 ```
 
-Установка NLTK stopwords:
+## Важные замечания
 
-```bash
-python3
-```
+- Загруженные файлы сохраняются в `uploads/`.
+- Сгенерированные графы и изображения сохраняются в `graphs/`.
+- Приложение запускается на порту `8000`.
 
-```python
-import nltk
-nltk.download('stopwords')
-exit()
-```
+## Дополнительно
 
-Запуск:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Открыть:
-
-```text
-http://127.0.0.1:80
-```
-
----
-
-# Windows
-
-## Windows 10 / Windows 11
-
-Установите:
-
-- Python 3.11+
-- Git
-
-Python:
-
-- https://www.python.org/downloads/
-
-Git:
-
-- https://git-scm.com/download/win
-
-Во время установки Python:
-
-```text
-Enable → Add Python to PATH
-```
-
-Клонирование проекта:
-
-```powershell
-git clone <repo_url>
-cd telanalysis
-```
-
-Создание virtualenv:
-
-```powershell
-python -m venv venv
-```
-
-Активация virtualenv:
-
-PowerShell:
-
-```powershell
-venv\Scripts\Activate.ps1
-```
-
-CMD:
-
-```cmd
-venv\Scripts\activate.bat
-```
-
-Установка зависимостей:
-
-```powershell
-pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-Загрузка NLTK stopwords:
-
-```powershell
-python
-```
+Если нужно, добавьте в `config.json` параметры для изменения количества анализируемых слов.
 
 ```python
 import nltk

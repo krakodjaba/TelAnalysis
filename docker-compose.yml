@@ -1,7 +1,13 @@
-version: "3.8"
 services:
   web:
     build: .
     ports:
-      - "80:80"
+      - "8000:8000"
+    volumes:
+      - ./graphs:/app/graphs
+      - ./uploads:/app/uploads
+      - ./config.json:/app/config.json
+    environment:
+      - PYTHONUNBUFFERED=1
     restart: unless-stopped
+    user: "0:0"

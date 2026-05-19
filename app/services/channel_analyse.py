@@ -2,6 +2,7 @@ import json
 import jmespath
 import time
 import os
+from pathlib import Path
 from wordcloud import WordCloud
 from . import nltk_analyse, utils
 
@@ -44,10 +45,16 @@ def analyze_channel_file(filepath: str) -> dict:
     text_raw = " ".join(data)
     wc = WordCloud(width=800, height=400, background_color='white').generate(text_raw)
 
-    out_dir = "graphs"
-    os.makedirs(out_dir, exist_ok=True)
-    wc_path = os.path.join(out_dir, f"{filename}_wordcloud.png")
-    wc.to_file(wc_path)
+    # Detect if running in Docker or on host
+    if Path("/app").exists() and Path("/.dockerenv").exists():
+        BASE_DIR = Path("/app")
+    else:
+        BASE_DIR = Path(__file__).parent.parent.parent
+    
+    out_dir = BASE_DIR / "graphs"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    wc_path = out_dir / f"{filename}_wordcloud.png"
+    wc.to_file(str(wc_path))
 
     gemy = [[word, count] for word, count in all_tokens]
 

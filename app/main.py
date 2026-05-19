@@ -9,22 +9,35 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 app = FastAPI(title="Telanalysis FastAPI")
+from pathlib import Path
 
-# Папка uploads
-# Папка graphs
-os.makedirs("graphs", exist_ok=True)
-app.mount("/graphs", StaticFiles(directory="graphs"), name="graphs")
+# Detect if running in Docker or on host
+if Path("/app").exists() and Path("/.dockerenv").exists():
+    # Running in Docker container
+    BASE_DIR = Path("/app")
+    STATIC_DIR = BASE_DIR / "app" / "static"
+    TEMPLATES_DIR = BASE_DIR / "app" / "templates"
+else:
+    # Running on host
+    BASE_DIR = Path(__file__).parent.parent
+    STATIC_DIR = BASE_DIR / "app" / "static"
+    TEMPLATES_DIR = BASE_DIR / "app" / "templates"
 
-# Папка uploads
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+GRAPHS_DIR = BASE_DIR / "graphs"
+UPLOADS_DIR = BASE_DIR / "uploads"
+
+GRAPHS_DIR.mkdir(parents=True, exist_ok=True)
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+
+app.mount("/graphs", StaticFiles(directory=str(GRAPHS_DIR)), name="graphs")
+app.mount("/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 # Папка static
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 
-templates = Jinja2Templates(directory="app/templates")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 # Подключаем роутер
 app.include_router(analysis.router, prefix="")

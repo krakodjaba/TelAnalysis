@@ -6,17 +6,24 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
-GRAPH_DIR = "graphs"
-os.makedirs(GRAPH_DIR, exist_ok=True)
+# Detect if running in Docker or on host
+if Path("/app").exists() and Path("/.dockerenv").exists():
+    BASE_DIR = Path("/app")
+else:
+    BASE_DIR = Path(__file__).parent.parent.parent
+
+GRAPH_DIR = BASE_DIR / "graphs"
+GRAPH_DIR.mkdir(parents=True, exist_ok=True)
 
 def generate_graph_from_file(filepath: str) -> dict:
     filename = os.path.basename(filepath).split(".")[0]
 
-    edges_path = os.path.join(GRAPH_DIR, f'edges_{filename}.csv')
-    nodes_path = os.path.join(GRAPH_DIR, f'nodes_{filename}.csv')
-    png_path = os.path.join(GRAPH_DIR, f'{filename}.png')
-    json_path = os.path.join(GRAPH_DIR, f'{filename}.json')  # D3 graph json
+    edges_path = GRAPH_DIR / f'edges_{filename}.csv'
+    nodes_path = GRAPH_DIR / f'nodes_{filename}.csv'
+    png_path = GRAPH_DIR / f'{filename}.png'
+    json_path = GRAPH_DIR / f'{filename}.json'  # D3 graph json
 
     # Загружаем JSON с сообщениями
     with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:

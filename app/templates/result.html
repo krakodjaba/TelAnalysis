@@ -12,11 +12,14 @@
       height: 600px;
       border: 1px solid #444;
       margin-top: 20px;
-      background-color: #0b1220; /* темный фон */
+      background-color: #0b1220;
+      border-radius: 8px;
     }
     text {
       fill: white;
-      font-family: Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 12px;
+      pointer-events: none;
     }
     line {
       stroke: #888;
@@ -24,7 +27,25 @@
     }
     circle {
       stroke: #fff;
-      stroke-width: 1px;
+      stroke-width: 2px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    circle:hover {
+      stroke: #2563eb;
+      stroke-width: 3px;
+    }
+    .node-label {
+      font-size: 11px;
+      fill: #e6eef8;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+    .link {
+      stroke-opacity: 0.4;
+    }
+    .link:hover {
+      stroke-opacity: 0.8;
+      stroke: #2563eb;
     }
   </style>
 </head>
@@ -72,6 +93,75 @@
           </table>
         </details>
       {% endfor %}
+    {% endif %}
+
+    {% if result.semantic %}
+      <h3>Semantic Analysis</h3>
+      {% if result.semantic.topics %}
+        <h4>Topics</h4>
+        {% for topic in result.semantic.topics %}
+          <details>
+            <summary>Topic (weight: {{ "%.2f"|format(topic.weight) }}%)</summary>
+            <p><strong>Keywords:</strong> {{ topic.keywords|join(', ') }}</p>
+            <p><strong>Frequency:</strong> {{ topic.frequency }}</p>
+          </details>
+        {% endfor %}
+      {% endif %}
+      {% if result.semantic.key_phrases %}
+        <h4>Key Phrases</h4>
+        <ul>
+          {% for phrase in result.semantic.key_phrases %}
+            <li>{{ phrase }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+      {% if result.semantic.coherence %}
+        <h4>Coherence</h4>
+        <p>Score: {{ result.semantic.coherence.coherence_score }}/100</p>
+        <p>Average Similarity: {{ result.semantic.coherence.avg_similarity }}</p>
+      {% endif %}
+    {% endif %}
+
+    {% if result.stylometric %}
+      <h3>Stylometric Analysis</h3>
+      <table>
+        <tr><th>Metric</th><th>Value</th></tr>
+        <tr><td>Lexical Diversity</td><td>{{ "%.2f"|format(result.stylometric.lexical_diversity) }}%</td></tr>
+        <tr><td>Average Word Length</td><td>{{ "%.2f"|format(result.stylometric.average_word_length) }}</td></tr>
+        <tr><td>Readability Score</td><td>{{ "%.2f"|format(result.stylometric.readability_score) }}</td></tr>
+        <tr><td>Dominant Tone</td><td>{{ result.stylometric.emotional_tone.dominant_tone }}</td></tr>
+      </table>
+      {% if result.stylometric.sentence_stats %}
+        <h4>Sentence Statistics</h4>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Average Length</td><td>{{ "%.2f"|format(result.stylometric.sentence_stats.avg_length) }} words</td></tr>
+          <tr><td>Min Length</td><td>{{ result.stylometric.sentence_stats.min_length }} words</td></tr>
+          <tr><td>Max Length</td><td>{{ result.stylometric.sentence_stats.max_length }} words</td></tr>
+          <tr><td>Total Sentences</td><td>{{ result.stylometric.sentence_stats.total_sentences }}</td></tr>
+        </table>
+      {% endif %}
+    {% endif %}
+
+    {% if result.temporal %}
+      <h3>Temporal Analysis</h3>
+      {% if result.temporal.frequency %}
+        <h4>Message Frequency</h4>
+        <table>
+          <tr><th>Metric</th><th>Value</th></tr>
+          <tr><td>Total Messages</td><td>{{ result.temporal.frequency.total_messages }}</td></tr>
+          <tr><td>Time Span</td><td>{{ result.temporal.frequency.time_span_days }} days</td></tr>
+          <tr><td>Messages per Day</td><td>{{ result.temporal.frequency.messages_per_day }}</td></tr>
+          <tr><td>Average Interval</td><td>{{ result.temporal.frequency.average_interval_minutes }} minutes</td></tr>
+          <tr><td>First Message</td><td>{{ result.temporal.frequency.first_message }}</td></tr>
+          <tr><td>Last Message</td><td>{{ result.temporal.frequency.last_message }}</td></tr>
+        </table>
+      {% endif %}
+      {% if result.temporal.peak_activity %}
+        <h4>Peak Activity</h4>
+        <p><strong>Peak Hour:</strong> {{ result.temporal.peak_activity.peak_hour.hour }}:00 ({{ result.temporal.peak_activity.peak_hour.message_count }} messages)</p>
+        <p><strong>Peak Day:</strong> {{ result.temporal.peak_activity.peak_day.day }} ({{ result.temporal.peak_activity.peak_day.message_count }} messages)</p>
+      {% endif %}
     {% endif %}
 
     

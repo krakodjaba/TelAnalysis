@@ -3,9 +3,17 @@ import string
 import emoji
 import json
 import os
+from pathlib import Path
 
 SPEC_CHARS = string.punctuation + '\n\xa0«»\t—…"<>?!.,;:꧁@#$%^&*()_+=№%༺༺\\༺/༺•'
-CONFIG_FILE = 'config.json'
+
+# Detect if running in Docker or on host
+if Path("/app").exists() and Path("/.dockerenv").exists():
+    BASE_DIR = Path("/app")
+else:
+    BASE_DIR = Path(__file__).parent.parent.parent
+
+CONFIG_FILE = BASE_DIR / "config.json"
 
 
 def read_conf(option: str):

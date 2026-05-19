@@ -126,7 +126,7 @@ Settings → Advanced → Export Telegram Data
 После запуска платформы:
 
 ```text
-http://127.0.0.1:8000
+http://127.0.0.1:80
 ```
 
 Загрузите exported JSON.
@@ -248,13 +248,13 @@ exit()
 Запуск:
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uvicorn app.main:app --host 0.0.0.0 --port 80
 ```
 
 Интерфейс:
 
 ```text
-http://127.0.0.1:8000
+http://127.0.0.1:80
 ```
 
 ---
@@ -311,7 +311,7 @@ uvicorn app.main:app --reload
 Открыть:
 
 ```text
-http://127.0.0.1:8000
+http://127.0.0.1:80
 ```
 
 ---
@@ -388,13 +388,13 @@ exit()
 Запуск:
 
 ```powershell
-uvicorn app.main:app --host 0.0.0.0 --port 8000
+uvicorn app.main:app --host 0.0.0.0 --port 80
 ```
 
 Открыть в браузере:
 
 ```text
-http://127.0.0.1:8000
+http://127.0.0.1:80
 ```
 
 ---
@@ -410,7 +410,7 @@ docker build -t telanalysis .
 ## Run
 
 ```bash
-docker run -p 8000:8000 telanalysis
+docker run -p 80:80 telanalysis
 ```
 
 ---

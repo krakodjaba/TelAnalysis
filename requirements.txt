@@ -9,4 +9,4 @@ matplotlib==3.8.0
 emoji==2.2.0
 vaderSentiment==3.3.2
 jmespath==1.0.1
-python-multipart==0.0.27
+python-multipart==0.0.31
